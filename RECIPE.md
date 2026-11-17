@@ -29,7 +29,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 
 ## How it behaves
 
-- **Casting.** A new agent takes the first free member of Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli. If the system is dark when the agent appears, Sauron is offered first. If a Sauron is already active, the next free member is taken. The choice is kept per terminal address in shared `fellowship.cast`, so the character survives restarts and later theme changes. When every member is taken, the cast starts over from the top: the next agent gets the least-used member, first in order on a tie.
+- **Casting.** A new agent takes a random free member of Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli. If the system is dark when the agent appears, Sauron is one more member of the draw. The choice is kept per terminal address in shared `fellowship.cast`, so the character survives restarts and later theme changes. When every member is taken, the cast starts over: the next agent gets a random pick among the least-used members.
 - **Working:** the character fights. Two frames swap every 800ms:
   - Gandalf: sparks burst from his staff.
   - Aragorn: draws his sword from its scabbard and thrusts.
@@ -100,7 +100,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 
 - `herdr-app check mods/<name>` passes for `fellowship`, `fellowship-toast`, `fellowship-status` and `realms`.
 - `layout.switch {"name":"middle-earth"}` shows the Shire in light mode and Mordor in dark mode, in TeX Gyre Pagella.
-- Starting a Claude Code agent adds Gandalf (or Sauron, when dark) with a working animation. When the agent waits, it switches to the idle pipe.
+- Starting a Claude Code agent adds a random member (Sauron can be drawn when dark) with a working animation. When the agent waits, it switches to the idle pipe.
 - A second agent gets the next free character, and the characters stay the same after a restart.
 - A finished agent shows "<Hero> returned from the quest" with the Ring sprite and plays `done-alert.mp3`.
 - With another app in front and `terminal-notifier` installed, the same message arrives as a macOS banner with the sprite.

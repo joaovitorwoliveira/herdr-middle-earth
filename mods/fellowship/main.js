@@ -81,7 +81,7 @@ function icon(p, size, color) {
 }
 
 const CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli"];
-// Joins only agents started while the system is dark, ahead of the fellowship.
+// Joins the casting only for agents started while the system is dark.
 const DARK_LORD = "sauron";
 const STILL_STATES = new Set(["idle", "blocked", "done"]);
 const CAST_KEY = "fellowship.cast";
@@ -114,7 +114,7 @@ function heroSprite(hero, status) {
   return still;
 }
 
-// Each agent keeps the character it got first; a new one takes the first character nobody listed has.
+// Each agent keeps the character it got first; a new one takes a random character nobody listed has.
 // Characters retired from the cast are recast.
 function castFor(list, all) {
   const stored = shared(CAST_KEY) ?? {};

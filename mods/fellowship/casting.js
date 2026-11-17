@@ -1,5 +1,7 @@
-// The least-cast character, first in pool order on a tie: free ones go first, then the cast starts over.
-export function pickHero(pool, heroes) {
+// A random pick among the least-cast characters: every character gets a turn before anyone repeats.
+export function pickHero(pool, heroes, random = Math.random) {
   const uses = (hero) => heroes.filter((h) => h === hero).length;
-  return pool.reduce((best, hero) => (uses(hero) < uses(best) ? hero : best));
+  const fewest = Math.min(...pool.map(uses));
+  const choices = pool.filter((hero) => uses(hero) === fewest);
+  return choices[Math.floor(random() * choices.length)];
 }
