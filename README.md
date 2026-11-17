@@ -1,6 +1,21 @@
-# Middle-earth for Herdr
+<p align="center">
+  <img src="docs/header.png" alt="Gandalf, Frodo, Sam, Legolas, Gimli and Sauron as pixel sprites" width="640">
+</p>
 
-A Lord of the Rings layout for the [Herdr](https://herdr.dev) desktop app. Your agents become the Fellowship and your spaces become the realms. Light mode is the Shire and dark mode is Mordor.
+<h1 align="center">Middle-earth for Herdr</h1>
+
+<p align="center">
+  <em>One layout to rule your agents.</em><br>
+  A Lord of the Rings layout for the <a href="https://herdr.dev">Herdr</a> desktop app.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Herdr-layout-4e7a32" alt="Herdr layout">
+  <img src="https://img.shields.io/badge/macOS-supported-e0662e" alt="macOS">
+  <img src="https://img.shields.io/badge/license-MIT-a8875a" alt="MIT license">
+</p>
+
+Your agents become the Fellowship and your spaces become the realms. Light mode is the Shire and dark mode is Mordor.
 
 ![Middle-earth in the Shire](preview.png)
 
