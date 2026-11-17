@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in the Middle-earth layout doesn't work or looks wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install with ./install.sh
+        2. Start an agent
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: herdr
+    attributes:
+      label: Herdr version
+      description: The output of `herdr-app --version`.
+      placeholder: herdr-app 0.1.16
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options: [macOS, Linux, Windows]
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed it
+      options: [install.sh, With an agent, By hand]
+    validations:
+      required: true
+  - type: textarea
+    id: errors
+    attributes:
+      label: Errors
+      description: The "errors" part of `herdr-app status`, if there are any.
+      render: json
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Drag an image here.

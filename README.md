@@ -75,6 +75,10 @@ python3 tools/banners.py    # PNG banners for notifications (needs Pillow)
 
 `RECIPE.md` describes the whole build, for anyone (or any agent) rebuilding it from scratch.
 
+## Contributing
+
+Issues and pull requests are welcome, and reports from Linux and Windows help the most. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to test a change.
+
 ## License
 
 MIT, except the TeX Gyre Pagella font in `mods/fellowship/fonts/`, which is under the GUST Font License included beside it.
