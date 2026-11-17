@@ -2,7 +2,8 @@
 
 import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { agents, settings, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout } from "herdr";
+import { agents, settings, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout, hc, checking } from "herdr";
+import { parseContext, parseModel } from "./agent-stats.js";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -86,6 +87,10 @@ const CAST_KEY = "fellowship.cast";
 const SPRITE_SIZE = 32;
 const MOOD = { working: "On the road", idle: "Resting", done: "Returned", blocked: "Awaits counsel" };
 const titleCase = (s) => s[0].toUpperCase() + s.slice(1);
+const STATS_PERIOD = 15000;
+const CTX_WARN = 50;
+const CTX_DANGER = 80;
+const CTX_BAR_HEIGHT = 3;
 const STEP_PERIOD = 800;
 // Loops only ease; swinging far past 0..1 makes the opacity cross over in about one frame, a crisp swap.
 const SWAP_LOW = -6;
@@ -143,6 +148,41 @@ export default class Agents extends View {
     if (!this.pendingPins.length) localStorage.removeItem("pins");
     this.migratingPins = new Set();
     cx.timer.every(30000, (cx) => cx.notify());
+    // Each agent's model and context use, read off its screen: { model, ctx }.
+    this.stats = {};
+    if (checking()) return;
+    cx.timer.every(STATS_PERIOD, (cx) => this.readStats(cx));
+    this.readStats(cx);
+  }
+
+  readStats(cx) {
+    cx.spawn(async (cx) => {
+      const list = agents();
+      const reads = await Promise.allSettled(list.map((a) => hc(["read", a.address])));
+      const next = {};
+      reads.forEach((r, i) => {
+        const address = list[i].address;
+        const before = this.stats[address];
+        if (r.status === "rejected" || r.value.code !== 0) {
+          console.warn(`fellowship: hc read ${address} failed: ${r.reason ?? r.value.stderr.trim()}`);
+          if (before) next[address] = before;
+          return;
+        }
+        // The start banner scrolls away: keep the model once seen.
+        next[address] = { model: parseModel(r.value.stdout) ?? before?.model ?? null, ctx: parseContext(r.value.stdout) };
+      });
+      if (JSON.stringify(next) === JSON.stringify(this.stats)) return;
+      this.stats = next;
+      cx.notify();
+    });
+  }
+
+  ctxBar(t, ctx) {
+    const color = ctx >= CTX_DANGER ? t.blocked : ctx >= CTX_WARN ? t.done : t.accent;
+    return h_flex().min_w(0).gap(6).items_center()
+      .child(div().flex_1().h(CTX_BAR_HEIGHT).rounded(2).bg(t.border)
+        .child(div().h_full().w(`${ctx}%`).rounded(2).bg(color)))
+      .child(div().flex_none().text_size(10).text_color(t.dim).child(`ctx ${ctx}%`));
   }
 
   // Stamps agents whose state changed. Done and idle count as one: looking at a
@@ -393,10 +433,12 @@ export default class Agents extends View {
       const name = full ? a.space_name || label(a) : more ?? (/^\d+$/.test(label(a)) ? a.program?.name || label(a) : label(a));
       const hero = cast[a.address];
       const sprite = hero ? heroSprite(hero, a.status) : pic;
+      const stat = this.stats[a.address];
+      const hasCtx = stat?.ctx != null;
       return h_flex()
         .id(`ag-${a.address}`)
         .px(8)
-        .h(48)
+        .h(hasCtx ? 60 : 48)
         .my(2)
         .flex_none()
         .rounded(8)
@@ -424,8 +466,10 @@ export default class Agents extends View {
             .child(div().flex_none().font_semibold().text_color(t.foreground).child(titleCase(hero ?? "")))
             .child(div().min_w(0).truncate().text_size(11).text_color(t.dim).child(MOOD[a.status] ?? ""))))
           .child(h_flex().min_w(0).gap(5).items_center().text_size(hero ? 11.5 : 13)
+            .when(Boolean(stat?.model), el => el.child(div().flex_none().text_color(t.foreground).child(`${stat.model} \u00b7`)))
             .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle || hero ? t.muted : t.foreground).child(name))
-            .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`)))))
+            .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
+          .when(hasCtx, el => el.child(this.ctxBar(t, stat.ctx))))
         .when(Boolean(machine), el => el.child(div().text_size(10).text_color(t.dim).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
         .when(this.hovered === a.address, el => el.child(pin))

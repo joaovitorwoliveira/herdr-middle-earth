@@ -26,6 +26,7 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
   - **Working:** they fight.
   - **Blocked:** they raise a `!`.
   - **Done:** they bring back the Ring.
+- **Model and context:** each card shows the agent's model and a bar for how much of its context window is used. Both are read off the agent's screen, so the bar needs a statusline that prints the percentage (see [Model and context](#model-and-context-optional)).
 - **Spaces:** each space gets a realm emblem: Shire, Rivendell, Gondor, Rohan, Lórien, Moria or Mordor.
 - **Notifications:** toasts and macOS banners in character, with the sprite ("Gandalf returned from the quest").
 - **Status bar:** counts agents by state ("2 on the road · 1 awaiting counsel").
@@ -63,6 +64,16 @@ A Focus mode hides banners unless `terminal-notifier` is allowed in it.
 Linux: needs `notify-send` (package `libnotify-bin` or `libnotify`). Windows: in-app toasts only.
 
 Without these, you still get the in-app toasts and sounds.
+
+### Model and context (optional)
+
+Herdr doesn't report an agent's model or context use, so the cards read them off the agent's screen every 15 seconds. They recognize:
+
+- **Claude Code:** a statusline with `ctx 27%` or a bar like `▓▓░░░░░░░░ 27%`, and the model name (`Opus 5.5`). Claude Code shows no statusline by default. Add one that prints `.model.display_name` and `.context_window.used_percentage` from the JSON it receives.
+- **pi:** its footer (`12.6%/500k`, `(openai-codex) gpt-6.1-sol • medium`).
+- **Codex and others:** `85% context left` or `Context left until auto-compact: 12%`.
+
+When nothing matches, the card simply has no bar.
 
 ## Editing the art
 
