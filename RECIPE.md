@@ -29,7 +29,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 
 ## How it behaves
 
-- **Casting.** A new agent takes the first free member of Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli. If the system is dark when the agent appears, Sauron is offered first. If a Sauron is already active, the next free member is taken. The choice is kept per terminal address in shared `fellowship.cast`, so the character survives restarts and later theme changes. When all members are taken, names repeat in order.
+- **Casting.** A new agent takes the first free member of Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli. If the system is dark when the agent appears, Sauron is offered first. If a Sauron is already active, the next free member is taken. The choice is kept per terminal address in shared `fellowship.cast`, so the character survives restarts and later theme changes. When every member is taken, the cast starts over from the top: the next agent gets the least-used member, first in order on a tie.
 - **Working:** the character fights. Two frames swap every 800ms:
   - Gandalf: sparks burst from his staff.
   - Aragorn: draws his sword from its scabbard and thrusts.

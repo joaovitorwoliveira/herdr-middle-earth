@@ -4,6 +4,7 @@ import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { agents, settings, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout, hc, checking } from "herdr";
 import { parseContext, parseModel } from "./agent-stats.js";
+import { pickHero } from "./casting.js";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -127,9 +128,9 @@ function castFor(list, all) {
   for (const a of list) {
     const current = cast[a.address];
     if (current === DARK_LORD || CAST.includes(current)) continue;
-    const taken = new Set(list.map((b) => cast[b.address]).filter(Boolean));
+    const heroes = list.map((b) => cast[b.address]).filter(Boolean);
     const pool = settings().dark ? [DARK_LORD, ...CAST] : CAST;
-    cast[a.address] = pool.find((c) => !taken.has(c)) ?? pool[taken.size % pool.length];
+    cast[a.address] = pickHero(pool, heroes);
     changed = true;
   }
   if (changed) setShared(CAST_KEY, cast);
