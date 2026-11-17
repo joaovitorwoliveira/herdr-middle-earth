@@ -1,8 +1,10 @@
 # Middle-earth
 
-Herdr dressed for a quest. Each agent is a member of the Fellowship, drawn as a 16x16 pixel sprite that moves with the agent's state: resting with a pipe while idle, fighting while it works, raising a "!" when it needs you and holding the Ring when it is done. Spaces carry the emblems of the realms. The window follows the system: the Shire's parchment and moss green in light mode, and the embers of Mordor in dark mode, where Sauron joins the cast. Toasts and macOS banners speak in the same voice ("Gandalf returned from the quest").
+Your agents become the Fellowship: animated pixel sprites that smoke a pipe while idle, fight while they work and bring back the Ring when done. The Shire in light mode, Mordor in dark, where Sauron joins the cast.
 
 ![Middle-earth](preview.png)
+
+![The window in the Shire](docs/shire.png)
 
 ## What you see
 

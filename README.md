@@ -17,7 +17,7 @@
 
 Your agents become the Fellowship and your spaces become the realms. Light mode is the Shire and dark mode is Mordor.
 
-![Middle-earth in the Shire](preview.png)
+![Middle-earth in the Shire](docs/shire.png)
 
 ![Middle-earth in Mordor, with Sauron](docs/mordor.png)
 
