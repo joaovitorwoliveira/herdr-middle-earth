@@ -188,6 +188,36 @@ GANDALF_STAFF = [
 GANDALF_PAL = {**SKIN, "G": "#8f9198", "g": "#6a6c74", "W": "#eeeeee", "w": "#c4c4c8", "T": "#7a5230",
                "x": "#cfe6ff", "X": "#ffffff", "k": "#3a3a40"}
 
+ARAGORN = [
+    "........" "........" "........",
+    "........" "........" "........",
+    "........" "oooooooo" "........",
+    ".......o" "hhhHhhhh" "o.......",
+    "......oh" "hHhhhhHh" "ho......",
+    "......oh" "hhhhhhhh" "ho......",
+    "......oh" "hsshhssh" "ho......",
+    "......oh" "ssssssss" "ho......",
+    ".....oSh" "skssssks" "hSo.....",
+    ".....oSh" "skssssks" "hSo.....",
+    "......oh" "ssssssss" "ho......",
+    "......oh" "bssmmssb" "ho......",
+    "......oh" "obbbbbbo" "ho......",
+    ".....ohh" "oCwLLwCo" "hho.....",
+    "....oCCC" "CcLLLLcC" "CCCo....",
+    "....oCcC" "CcLlLLcC" "CcCo....",
+    "....oCcC" "CcLlLLcC" "CcCo....",
+    "....oCcC" "nnnynnnn" "CcCo....",
+    "....oCCC" "CcLLLLcC" "CCCo....",
+    "....osso" "CcPPPPcC" "osso....",
+    ".....oo." "oCPPPPCo" ".oo.....",
+    "........" "oPPooPPo" "........",
+    ".......o" "nno..onn" "o.......",
+    ".......o" "ooo..ooo" "o.......",
+]
+ARAGORN_PAL = {**SKIN, "h": "#2e2018", "H": "#4a3424", "b": "#8a5e44", "C": "#4a5a42", "c": "#36442f",
+               "w": "#c8ccd4", "L": "#6b4a2a", "l": "#523620", "n": "#3e2a1c", "y": "#c9a34a", "P": "#4a4038",
+               "g": "#c9a34a", "G": "#7a5230", "V": "#3a2a1e"}
+
 SAURON = [
     "........" "...SS..." "........",
     "........" ".S.SS.S." "........",
@@ -258,6 +288,8 @@ def hero(name):
         return gimli_axe_low(GIMLI), GIMLI_PAL
     if name == "gandalf":
         return under(GANDALF_STAFF, GANDALF), GANDALF_PAL
+    if name == "aragorn":
+        return scabbard(ARAGORN, drawn=False), ARAGORN_PAL
     if name == "sauron":
         return sauron_mace_low(SAURON), SAURON_PAL
     raise KeyError(name)
@@ -280,6 +312,12 @@ def gimli_axe_low(rows):
         ".ooToo",
         "...o..",
     ])
+
+
+def scabbard(rows, drawn):
+    """The scabbard at the left hip, with the hilt in it or empty."""
+    hilt = ["..o..", ".o,o.", ".o,o.", "ooooo"] if drawn else ["..o..", ".oGo.", ".oGo.", "ogggo"]
+    return stamp(rows, 1, 13, hilt + [".oVo."] * 6 + ["..o.."])
 
 
 def sauron_mace_low(rows):
@@ -460,6 +498,41 @@ def gandalf_frames():
                  "gandalf-idle-2": put(smoke(put(still, pipe), (4, 12), False), [(4, 12, "4")])}
 
 
+def aragorn_frames():
+    base, pal = hero("aragorn")
+    pal = {**pal, **SMOKE, "X": "#eef2f8", "x": "#a8b0bc", "*": "#fff4b0", "z": "#8a5a40", "p": "#6b4a2a"}
+    empty = scabbard(ARAGORN, drawn=True)
+    up = stamp(empty, 16, 0, [
+        "...o..",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        ".ogggo",
+        "..oGo.",
+        "..oso.",
+        ".oCCo.",
+        ".oCo..",
+        "oCo...",
+    ])
+    up = put(up, [(21, 1, "*"), (20, 0, "*"), (22, 2, "*"), (21, 2, "x")])
+    strike = stamp(empty, 15, 12, [
+        "..ooo.oo.",
+        ".CCsgXXXX",
+        "..ooo.oo.",
+    ])
+    strike = put(strike, [(19, 4, "x"), (21, 5, "x"), (22, 7, "x"), (23, 9, "x"), (23, 11, "x")])
+    pipe = [(8, 11, "p"), (7, 11, "p"), (6, 11, "p"), (5, 11, "p"), (4, 11, "5"), (3, 11, "5"), (4, 12, "o"), (3, 12, "o"),
+            (2, 11, "o"), (2, 10, "o"), (3, 10, "5"), (5, 12, "s")]
+    still = asleep(base, [8, 9])
+    return pal, {"aragorn": base, "aragorn-work": up, "aragorn-2": strike,
+                 "aragorn-idle": smoke(put(still, pipe), (4, 10), True),
+                 "aragorn-idle-2": put(smoke(put(still, pipe), (4, 10), False), [(4, 10, "4")])}
+
+
 def sauron_frames():
     base, pal = hero("sauron")
     pal = {**pal, "E": "#ffe08a", "f": "#ff9a2a", "F": "#ffd04a", "d": "#7a2a10", "w": "#c8c8d0"}
@@ -491,8 +564,8 @@ def sauron_frames():
     return pal, {"sauron": base, "sauron-work": up, "sauron-2": strike, "sauron-idle": dim, "sauron-idle-2": base}
 
 
-CAST = ["gandalf", "frodo", "sam", "legolas", "gimli", "sauron"]
-FRAMES = (gandalf_frames, frodo_frames, sam_frames, legolas_frames, gimli_frames, sauron_frames)
+CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli", "sauron"]
+FRAMES = (gandalf_frames, aragorn_frames, frodo_frames, sam_frames, legolas_frames, gimli_frames, sauron_frames)
 POSES = dict(zip(CAST, (frames() for frames in FRAMES)))
 # Base pose with the character's full palette, every pose's colors included.
 SPRITES = {name: (poses[name], palette) for name, (palette, poses) in POSES.items()}

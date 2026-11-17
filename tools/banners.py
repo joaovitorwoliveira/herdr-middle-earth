@@ -5,7 +5,7 @@ from PIL import Image
 # Notification Center takes PNG, not SVG; 8x keeps the pixels crisp.
 SCALE = 8
 OUT = os.path.join(pixels.HOME, "fellowship", "banners")
-CAST = ["gandalf", "frodo", "sam", "legolas", "gimli", "sauron"]
+CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli", "sauron"]
 
 
 def png(rows, palette, path):

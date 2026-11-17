@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/header.png" alt="Gandalf, Frodo, Sam, Legolas, Gimli and Sauron as pixel sprites" width="640">
+  <img src="docs/header.png" alt="Gandalf, Aragorn, Frodo, Sam, Legolas, Gimli and Sauron as pixel sprites" width="640">
 </p>
 
 <h1 align="center">Middle-earth for Herdr</h1>
@@ -21,7 +21,7 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
 
 ![Middle-earth in Mordor, with Sauron](docs/mordor.png)
 
-- **Agents:** Gandalf, Frodo, Sam, Legolas and Gimli, as animated pixel sprites. Sauron joins in dark mode.
+- **Agents:** Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli, as animated pixel sprites. Sauron joins in dark mode.
   - **Idle:** they smoke a pipe.
   - **Working:** they fight.
   - **Blocked:** they raise a `!`.

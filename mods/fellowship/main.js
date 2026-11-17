@@ -79,7 +79,7 @@ function icon(p, size, color) {
   return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
 }
 
-const CAST = ["gandalf", "frodo", "sam", "legolas", "gimli"];
+const CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli"];
 // Joins only agents started while the system is dark, ahead of the fellowship.
 const DARK_LORD = "sauron";
 const STILL_STATES = new Set(["idle", "blocked", "done"]);

@@ -4,7 +4,7 @@ from PIL import Image
 
 # The README's header: the cast side by side on a transparent background, so it reads on
 # GitHub's light and dark pages alike.
-CAST = ["gandalf", "frodo", "sam", "legolas", "gimli", "sauron"]
+CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli", "sauron"]
 SCALE = 8
 GAP = 4
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "header.png")
