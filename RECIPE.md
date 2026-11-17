@@ -6,7 +6,7 @@ Herdr dressed for a quest. Each agent is a member of the Fellowship, drawn as a 
 
 ## What you see
 
-The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: Palatino. Terminal padding: `[14, 12]`. A 1px `border` divider runs between the columns.
+The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: TeX Gyre Pagella, a free Palatino clone that ships in `mods/fellowship/fonts/`, so it looks the same on every system. Terminal padding: `[14, 12]`. A 1px `border` divider runs between the columns.
 
 - **Sidebar, left, 268px** (min 44, max 480, not resizable), on `chrome`:
   - **Brand**, 46px: the shipped `workspace-chrome`. It is a window drag area.
@@ -46,7 +46,10 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
   - "<program> needs you" becomes "<Hero> awaits your counsel".
   - The body reads "<program> · <body>" and the toast shows the matching 28px sprite.
   - Other toasts look like Herdr's own, with an 18px icon.
-- **macOS banners:** when the Herdr window is not active, the same text goes to Notification Center through `terminal-notifier`, with the character's 128px PNG as the picture. Clicking the banner brings Herdr forward.
+- **System banners:** when the Herdr window is not active, the same text goes to the system too, with the character's 128px PNG as the picture.
+  - macOS: Notification Center through `terminal-notifier`. Clicking the banner brings Herdr forward.
+  - Linux: `notify-send`.
+  - Windows: no banner, only the in-app toast.
 - **Sounds:** a custom done sound and a custom blocked sound.
 - **Everything else** (clicks, keys, sorting, pinning, sub-agents) is the shipped `agents`, `spaces` and `toast` behavior.
 
@@ -62,7 +65,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 - **`fellowship-status`:** a clone of `workspace-status`, with counts from `agents()` by status.
 - **`fellowship-toast`:** a clone of `toast`.
   - `heroOf()` matches the title against `/^(.+) (finished|needs you)$/`. It reads the terminal from `action.args.terminal` when the action is `agent.focus`, then looks up `fellowship.cast`.
-  - `init()` posts to the system, using `exec("terminal-notifier", [...])` with `-activate dev.herdr.app -contentImage <appHome>/<png>`. If that fails, it falls back to `osascript`. It skips this when `window().active` or during `checking()`.
+  - `init()` posts to the system by `window().platform`. On macOS it uses `exec("terminal-notifier", [...])` with `-activate dev.herdr.app -contentImage <appHome>/<png>`, falling back to `osascript` if that fails. On Linux it uses `exec("notify-send", ["-a", "Herdr", "-i", <png>, title, body])`. It skips this when `window().active` or during `checking()`.
 - **`realms`:** a clone of `spaces`. It keeps each space's realm in shared `realms.emblems` and draws `emblems/<realm>.svg`.
 - **Outside the layout:**
   - `programs.json` sets the `claude` and `shell` icons.
@@ -72,6 +75,13 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 
 ## Watch out
 
+- **Installing takes more than `layouts/` and `mods/`.** An agent adding this layout must also:
+  1. Copy `themes/shire.json` and `themes/mordor.json` to the home's `themes/`. Without them the layout shows the person's own theme.
+  2. Copy `layouts/middle-earth.png` beside the layout file. Settings shows it as the layout's picture.
+  3. Merge `settings.snippet.json` into the home's `settings.json` (the `sounds` keys) and `programs.json` into the home's `programs.json` (the `claude` and `shell` entries), key by key, keeping everything else.
+
+  On macOS and Linux, `./install.sh` does all of this and moves anything it replaces to `backups/middle-earth-<time>/`. On Windows, do it by hand.
+- **Version:** built and tested on Herdr 0.1.16, macOS. Linux and Windows follow the code and Herdr's docs, but nobody has tested them.
 - **Palette keys:** each grid character maps to a color per sprite. Overlays such as smoke, badges and weapons must use keys that the base palette does not use: smoke uses `1` to `6`. Otherwise they recolor a beard or a pack.
 - **Badges** are drawn into the empty top-left 4x5 corner. The generator asserts that the corner is empty.
 - **Program icons and sounds** belong to the person's own files, not to the layout. Herdr reads them from `programs.json` and `settings.json` for every layout.
@@ -80,13 +90,13 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
   - `terminal-notifier` has to be allowed once: open its `.app`.
   - A Focus mode hides banners unless `terminal-notifier` is allowed in it.
 - **Posting from `init()`:** the post happens in `init()`, not in `render()`. `render()` may never run while the window is on another macOS Space.
-- **Palatino** is a macOS font. Elsewhere, Herdr falls back to its default ui font.
+- **Pagella** loads from `mods/fellowship/fonts/` (Herdr loads a mod's `fonts/` at start and on the next look change). Its license, GUST, sits beside the files.
 - **Image loading:** images load lazily, so the first frame after a switch can show empty sprite slots.
 
 ## Done when
 
 - `herdr-app check mods/<name>` passes for `fellowship`, `fellowship-toast`, `fellowship-status` and `realms`.
-- `layout.switch {"name":"middle-earth"}` shows the Shire in light mode and Mordor in dark mode, in Palatino.
+- `layout.switch {"name":"middle-earth"}` shows the Shire in light mode and Mordor in dark mode, in TeX Gyre Pagella.
 - Starting a Claude Code agent adds Gandalf (or Sauron, when dark) with a working animation. When the agent waits, it switches to the idle pipe.
 - A second agent gets the next free character, and the characters stay the same after a restart.
 - A finished agent shows "<Hero> returned from the quest" with the Ring sprite and plays `done-alert.mp3`.

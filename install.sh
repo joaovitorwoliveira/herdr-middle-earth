@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Installs the Middle-earth layout into a Herdr desktop home and switches to it.
-# Anything it would replace is first kept as <name>.bak-<time>.
+# Anything it would replace is first moved to backups/middle-earth-<time>/.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HERDR_HOME="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
+# Outside mods/ and layouts/: a backed-up mod folder left in mods/ would load as a mod of its own.
+BACKUP="$HERDR_HOME/backups/middle-earth-$STAMP"
 LAYOUT="middle-earth"
 MODS=(fellowship fellowship-toast fellowship-status realms)
 THEMES=(shire mordor)
@@ -15,10 +17,12 @@ fail() { echo "install.sh: $*" >&2; exit 1; }
 command -v python3 >/dev/null || fail "python3 is needed to merge settings.json and programs.json."
 [ -d "$HERDR_HOME" ] || fail "no Herdr home at $HERDR_HOME. Open Herdr once, or set HERDR_APP_HOME."
 
+# $1: a path relative to the Herdr home.
 keep_aside() {
-  if [ -e "$1" ]; then
-    mv "$1" "$1.bak-$STAMP"
-    echo "  kept the old $(basename "$1") as $(basename "$1").bak-$STAMP"
+  if [ -e "$HERDR_HOME/$1" ]; then
+    mkdir -p "$(dirname "$BACKUP/$1")"
+    mv "$HERDR_HOME/$1" "$BACKUP/$1"
+    echo "  moved the old $1 to backups/middle-earth-$STAMP/"
   fi
 }
 
@@ -26,22 +30,22 @@ echo "Installing into $HERDR_HOME"
 mkdir -p "$HERDR_HOME/layouts" "$HERDR_HOME/themes" "$HERDR_HOME/mods"
 
 for mod in "${MODS[@]}"; do
-  keep_aside "$HERDR_HOME/mods/$mod"
+  keep_aside "mods/$mod"
   cp -R "$REPO/mods/$mod" "$HERDR_HOME/mods/$mod"
 done
 for theme in "${THEMES[@]}"; do
-  keep_aside "$HERDR_HOME/themes/$theme.json"
+  keep_aside "themes/$theme.json"
   cp "$REPO/themes/$theme.json" "$HERDR_HOME/themes/"
 done
 for file in "$LAYOUT.json" "$LAYOUT.png"; do
-  keep_aside "$HERDR_HOME/layouts/$file"
+  keep_aside "layouts/$file"
   cp "$REPO/layouts/$file" "$HERDR_HOME/layouts/"
 done
 
 # Sounds and program icons live in the person's own files, not the layout, so they are merged in.
 merge_json() {
   local target="$HERDR_HOME/$1" snippet="$REPO/$2"
-  [ -e "$target" ] && cp "$target" "$target.bak-$STAMP"
+  if [ -e "$target" ]; then mkdir -p "$BACKUP" && cp "$target" "$BACKUP/$1"; fi
   python3 - "$target" "$snippet" <<'PY'
 import json, os, sys
 

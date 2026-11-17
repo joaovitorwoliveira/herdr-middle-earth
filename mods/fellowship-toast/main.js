@@ -25,10 +25,9 @@ function reportFailure(tool) {
   return (r) => { if (r.code !== 0) console.error(`System notification failed (${tool} ${r.code}): ${r.stderr}`); };
 }
 
-// The in-app toast is invisible from another macOS Space, so mirror it to Notification Center.
 // macOS drops osascript banners started from inside Herdr, so terminal-notifier (its own app,
 // its own permission) comes first; osascript only runs when it isn't installed.
-function postToSystem(title, body, image) {
+function postToMacos(title, body, image) {
   const picture = image ? ["-contentImage", `${appHome()}/${image}`] : [];
   exec("terminal-notifier", ["-title", title, "-message", body || " ", "-activate", HERDR_BUNDLE, ...picture]).then(
     reportFailure("terminal-notifier"),
@@ -37,6 +36,21 @@ function postToSystem(title, body, image) {
       (e) => console.error(`System notification failed: ${e}`),
     ),
   );
+}
+
+function postToLinux(title, body, image) {
+  const icon = image ? ["-i", `${appHome()}/${image}`] : [];
+  exec("notify-send", ["-a", "Herdr", ...icon, title, body]).then(
+    reportFailure("notify-send"),
+    (e) => console.error(`System notification failed (is notify-send installed?): ${e}`),
+  );
+}
+
+// The in-app toast can't be seen from behind another app, so mirror it to the system's banners.
+// Windows has no banner command to call, so there the in-app toast is all.
+function postToSystem(platform, title, body, image) {
+  if (platform === "macos") postToMacos(title, body, image);
+  if (platform === "linux") postToLinux(title, body, image);
 }
 
 function heroOf(p) {
@@ -58,10 +72,11 @@ const DOT = { error: "blocked", warning: "working", success: "done", info: "acce
 export default class Toast extends View {
   // init, not render: from another macOS Space the window may not draw, so render may not run.
   init() {
-    if (checking() || window()?.active) return;
+    const w = window();
+    if (checking() || !w || w.active) return;
     const raw = props() ?? {};
     const p = { ...raw, ...heroOf(raw) };
-    postToSystem(p.title ?? "Herdr", p.body ?? "", p.banner);
+    postToSystem(w.platform, p.title ?? "Herdr", p.body ?? "", p.banner);
   }
 
   render(cx) {
