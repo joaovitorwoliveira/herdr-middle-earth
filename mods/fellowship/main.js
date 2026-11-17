@@ -84,7 +84,7 @@ const CAST = ["gandalf", "frodo", "sam", "legolas", "gimli"];
 const DARK_LORD = "sauron";
 const STILL_STATES = new Set(["idle", "blocked", "done"]);
 const CAST_KEY = "fellowship.cast";
-const SPRITE_SIZE = 32;
+const SPRITE_SIZE = 36;
 const MOOD = { working: "On the road", idle: "Resting", done: "Returned", blocked: "Awaits counsel" };
 const titleCase = (s) => s[0].toUpperCase() + s.slice(1);
 const STATS_PERIOD = 15000;

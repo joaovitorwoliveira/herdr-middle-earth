@@ -77,7 +77,7 @@ When nothing matches, the card simply has no bar.
 
 ## Editing the art
 
-The sprites are 16x16 grids in `tools/sprites.py`. To regenerate them, run:
+The agent sprites are 24x24 grids and the realm emblems 16x16, all in `tools/sprites.py`. To regenerate them, run:
 
 ```sh
 python3 tools/sprites.py    # SVG sprites and realm emblems

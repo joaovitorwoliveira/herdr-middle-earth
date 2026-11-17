@@ -13,7 +13,7 @@ Open an issue with the bug template. Include your Herdr version (`herdr-app --ve
    - `layouts/middle-earth.json`: the window layout.
    - `themes/`: the Shire (light) and Mordor (dark) colors.
    - `mods/`: the code. `fellowship` is the agents list, `fellowship-toast` the notifications, `fellowship-status` the status bar and `realms` the spaces list.
-   - `tools/sprites.py`: every sprite and emblem, as 16x16 grids.
+   - `tools/sprites.py`: every sprite and emblem, as grids (24x24 agents, 16x16 emblems).
 3. To change art, edit the grids in `tools/sprites.py`, never the SVG or PNG files. Then regenerate:
 
    ```sh

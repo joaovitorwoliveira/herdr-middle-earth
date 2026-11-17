@@ -3,196 +3,520 @@ import sys
 
 # Writes into the repo next to this script, never into a live Herdr home.
 HOME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mods")
-SIZE = 16
+# Agents are 24x24 grids, realm emblems 16x16. Each agent row is written as three 8-column chunks.
+SIZE = 24
 
-SKIN = {"s": "#f1c9a0", "k": "#1b1b1b"}
-HOBBIT = [
-    "................",
-    "................",
-    "................",
-    ".....hhhhhh.....",
-    "....hhhhhhhh....",
-    "....hssssssh....",
-    "....hskssksh....",
-    ".....ssssss.....",
-    "....CCLLLLCC....",
-    "...CCcLyLLcCC...",
-    "...CCcVLLVcCC...",
-    "...CccVVVVccC...",
-    "....CcPPPPcC....",
-    ".....cPPPPc.....",
-    ".....PP..PP.....",
-    "....ssh..hss....",
+OUT = "#2a1e18"
+SKIN = {"o": OUT, "s": "#f2c9a0", "S": "#d9a07a", "k": "#1b1b1b", "m": "#a8604a", "r": "#e8968a"}
+
+
+def stamp(rows, x0, y0, art):
+    """Draws art at x0,y0. "." keeps a pixel, "," clears it, anything else paints."""
+    out = [list(r) for r in rows]
+    for dy, line in enumerate(art):
+        for dx, c in enumerate(line):
+            if c != ".":
+                out[y0 + dy][x0 + dx] = "." if c == "," else c
+    return ["".join(r) for r in out]
+
+
+def put(rows, points):
+    """Draws (x, y, char) points; char "," clears."""
+    out = [list(r) for r in rows]
+    for x, y, c in points:
+        out[y][x] = "." if c == "," else c
+    return ["".join(r) for r in out]
+
+
+def under(back, front):
+    """Lays front over back, both full grids."""
+    return ["".join(f if f != "." else b for b, f in zip(br, fr)) for br, fr in zip(back, front)]
+
+
+def shift_left(rows, n):
+    return [r[n:] + "." * n for r in rows]
+
+
+def col(x, ys, c):
+    return [(x, y, c) for y in ys]
+
+
+def ring(cx, top, c="1"):
+    return [(cx, top, c), (cx - 1, top + 1, c), (cx + 1, top + 1, c), (cx, top + 2, c)]
+
+
+HOBBIT_HEAD = [
+    "........" "........" "........",
+    "........" "........" "........",
+    "........" "oooooooo" "........",
+    ".......o" "hhHhhHhh" "o.......",
+    "......oh" "HhhhhhhH" "ho......",
+    "......oh" "hhhhhhhh" "ho......",
+    "......oh" "shhsshhs" "ho......",
+    "......oh" "ssssssss" "ho......",
+    ".....oSh" "skssssks" "hSo.....",
+    ".....oSh" "skssssks" "hSo.....",
+    "......oh" "ssssssss" "ho......",
+    "......oo" "sssmmsss" "oo......",
+    ".......o" "osssssso" "o.......",
+]
+HOBBIT_LEGS = [
+    "....osso" "cPPPPPPc" "osso....",
+    ".....oo." "oPPPPPPo" ".oo.....",
+    "........" "oPPooPPo" "........",
+    "......os" "hho..ohh" "so......",
+    "......oo" "ooo..ooo" "oo......",
 ]
 
+FRODO = HOBBIT_HEAD + [
+    ".....ooo" "CcLLLLcC" "ooo.....",
+    "....oCCC" "cczLLzcc" "CCCo....",
+    "....oCGC" "cVLyyLVc" "CGCo....",
+    "....oCGC" "cVyLLyVc" "CGCo....",
+    "....oCGC" "cVLyyLVc" "CGCo....",
+    "....oCCC" "cVVVVVVc" "CCCo....",
+] + HOBBIT_LEGS
+FRODO_PAL = {**SKIN, "h": "#4a2e1a", "H": "#6e4628", "C": "#4f7038", "c": "#36522a", "G": "#6f9050",
+             "L": "#ece6d4", "V": "#8a6a3a", "y": "#f2c230", "P": "#6b5235"}
 
-def hobbit(hair, cloak, cloak_dark, vest, ring=False):
-    rows = HOBBIT if ring else [r.replace("y", "L") for r in HOBBIT]
-    return rows, {**SKIN, "h": hair, "C": cloak, "c": cloak_dark, "V": vest,
-                  "L": "#e8e2d0", "y": "#f2c230", "P": "#6b5235"}
+SAM = HOBBIT_HEAD[:10] + [
+    "......oh" "rssssssr" "ho......",
+] + HOBBIT_HEAD[11:] + [
+    ".....ooo" "LlLLLLlL" "ooo.....",
+    "....oLLL" "VLLLLLLV" "LLLo....",
+    "....oLlL" "VVVLLVVV" "LlLo....",
+    "....oLlL" "VVVLLVVV" "LlLo....",
+    "....oLLL" "VVVVVVVV" "LLLo....",
+    "....oooo" "vVVVVVVv" "oooo....",
+] + [r.replace("c", "o") if i == 0 else r for i, r in enumerate(HOBBIT_LEGS)]
+SAM_PAL = {**SKIN, "h": "#94612e", "H": "#b47c40", "L": "#ece6d4", "l": "#c9c0a6", "V": "#c0662a", "v": "#94481c",
+           "P": "#6b5235", "c": "#6b5235"}
+
+LEGOLAS = [
+    "........" "........" "........",
+    "........" "........" "........",
+    "........" "oooooooo" "........",
+    ".......o" "YYYYYYYY" "o.......",
+    "......oY" "YYYYYYYY" "Yo......",
+    "......oY" "YYYYYYYY" "Yo......",
+    "......oY" "YYYsssss" "Yo......",
+    "....o.oY" "ssssssss" "Yo.o....",
+    "....oSSY" "skssssks" "YSSo....",
+    ".....oSY" "skssssks" "YSo.....",
+    "......oY" "ssssssss" "Yo......",
+    "......oY" "sssmmsss" "Yo......",
+    "......oY" "osssssso" "Yo......",
+    ".....oYY" "oEeEEeEo" "YYo.....",
+    "....oEYY" "EEEEEEEE" "YYEo....",
+    "....oEeE" "EEEEEEEE" "EeEo....",
+    "....oEeE" "EEEEEEEE" "EeEo....",
+    "....oEeE" "nnnynnnn" "EeEo....",
+    "....oEEE" "EEEEEEEE" "EEEo....",
+    "....osso" "EEEeeEEE" "osso....",
+    ".....oo." "oeeeeeeo" ".oo.....",
+    "........" "oDDooDDo" "........",
+    ".......o" "nno..onn" "o.......",
+    ".......o" "ooo..ooo" "o.......",
+]
+LEGOLAS_PAL = {**SKIN, "Y": "#ead47e", "w": "#fff2b8", "E": "#5f8a3e", "e": "#46682c", "n": "#6b4a2a",
+               "y": "#d4a017", "D": "#4a5a3a"}
+
+GIMLI = [
+    "........" "........" "........",
+    "........" "........" "........",
+    "........" "........" "........",
+    "........" "oooooooo" "........",
+    ".......o" "MwwMMMMM" "o.......",
+    "......oM" "wMMMMMMM" "Mo......",
+    "......oM" "MMMyyMMM" "Mo......",
+    ".....omm" "mmmmmmmm" "mmo.....",
+    ".....oMR" "RRssssRR" "RMo.....",
+    ".....oMR" "skssssks" "RMo.....",
+    ".....oMR" "RssSSssR" "RMo.....",
+    "...oDRRR" "RRRRRRRR" "RRRDo...",
+    "..oDDRRR" "RrRRRRrR" "RRRDDo..",
+    "..oDdDRR" "RrRRRRrR" "RRDdDo..",
+    "..oDdDoR" "RrRRRRrR" "RoDdDo..",
+    "..oDdDoR" "RrRRRRrR" "RoDdDo..",
+    "..ossso." "nyRRRRyn" ".ossso..",
+    "..ossso." "nnoRRonn" ".ossso..",
+    "...ooo.o" "MMMooMMM" "o.ooo...",
+    "......oM" "mMMoMMmM" "Mo......",
+    "......oo" "PPPooPPP" "oo......",
+    ".....onn" "nnno.onn" "nno.....",
+    ".....onn" "nnno.onn" "nno.....",
+    ".....ooo" "oooo.ooo" "ooo.....",
+]
+GIMLI_PAL = {**SKIN, "M": "#a3a3a8", "m": "#6e6e74", "w": "#e0e0e4", "y": "#d4a017", "R": "#c4512a", "r": "#8e3418",
+             "D": "#6b4a2a", "d": "#4e341c", "P": "#5a4030", "n": "#3e2a1c"}
+
+GANDALF = [
+    "........" "....oo.." "........",
+    "........" "...oGo.." "........",
+    "........" "..oGGo.." "........",
+    "........" "..oGgGo." "........",
+    "........" ".oGGgGo." "........",
+    "........" "oGGGgGGo" "........",
+    "....ooGG" "GGGGGGGG" "GGoo....",
+    "...oGGGG" "gggggggg" "GGGGo...",
+    "....oooW" "ssssssss" "Wooo....",
+    "......oW" "sWWssWWs" "Wo......",
+    "......oW" "skssssks" "Wo......",
+    "......oW" "sWWWWWWs" "Wo......",
+    ".....oWW" "WWWWWWWW" "WWo.....",
+    "....oGGw" "WWWWWWWW" "wGGo....",
+    "...oGGGw" "WWWWWWWW" "wGGGo...",
+    "...oGgGG" "wWWWWWWw" "GGgGo...",
+    "...oGgGG" "GwWWWWwG" "GGgGo...",
+    "...oGgGG" "GGwWWwGG" "GGgGo...",
+    "...ossoG" "GGGwwGGG" "Gosso...",
+    "....oooG" "GGGGGGGG" "Gooo....",
+    "......oG" "GgGGGGgG" "Go......",
+    "......oG" "gGGGGGGg" "Go......",
+    "......ok" "kko..okk" "ko......",
+    "......oo" "ooo..ooo" "oo......",
+]
+GANDALF_STAFF = [
+    "........" "........" "........",
+    "........" "........" "........",
+    "........" "........" "..ooo...",
+    "........" "........" ".oTTTo..",
+    "........" "........" ".oTXTo..",
+    "........" "........" ".ooTTo..",
+    "........" "........" "..oTo...",
+] + ["........" "........" "..oTo..."] * 15 + ["........" "........" "..ooo..."] + ["........" * 3]
+GANDALF_PAL = {**SKIN, "G": "#8f9198", "g": "#6a6c74", "W": "#eeeeee", "w": "#c4c4c8", "T": "#7a5230",
+               "x": "#cfe6ff", "X": "#ffffff", "k": "#3a3a40"}
+
+SAURON = [
+    "........" "...SS..." "........",
+    "........" ".S.SS.S." "........",
+    "........" "oSSSSSSo" "........",
+    "........" "oHHHHHHo" "........",
+    "........" "oHhhhhHo" "........",
+    "........" "oeehheeo" "........",
+    "........" "oHhHHhHo" "........",
+    ".....S.." "oHhHHhHo" "..S.....",
+    ".....oS." ".oHhhHo." ".So.....",
+    "....ooSS" "PoAAAAoP" "SSoo....",
+    "...oSPPP" "pAAAAAAp" "PPPSo...",
+    "...opppo" "oAAaaAAo" "opppo...",
+    "....oAAo" "oAehheAo" "oAAo....",
+    "....oAgo" "oAAaaAAo" "ogAo....",
+    "....oAAo" "oAAAAAAo" "oAAo....",
+    "....oAgo" "oyyyyyyo" "ogAo....",
+    "...oGGGo" "oCcCCcCo" "oGGGo...",
+    "...oGGGo" "oCcCCcCo" "oGGGo...",
+    "....ooo." "oACCCCAo" ".ooo....",
+    "........" "oACcCCAo" "........",
+    "........" "oACcCCAo" "........",
+    "........" "oAAooAAo" "........",
+    ".......o" "AAo..oAA" "o.......",
+    "......oo" "ooo..ooo" "oo......",
+]
+SAURON_PAL = {"o": "#0e0e12", "S": "#8a8a96", "H": "#4e4e5a", "h": "#121216", "e": "#ff7a1a", "P": "#62626e",
+              "p": "#3c3c46", "A": "#40404c", "a": "#a8401a", "g": "#6e6e7a", "C": "#2e2a32", "c": "#46404e",
+              "y": "#9a6e22", "G": "#5a5a66", "T": "#3a3a40", "M": "#6e6e7a", "m": "#a0a0aa"}
 
 
-SPRITES = {
-    "gandalf": ([
-        "......G.........",
-        ".....GG.........",
-        ".....GGG........",
-        "....GGGG........",
-        "....GGGGG....o..",
-        "..GGGGGGGGGG.T..",
-        "....ssssss...T..",
-        "....skssks...T..",
-        "....WWWWWW...T..",
-        "...gWWWWWWg..T..",
-        "..ggWWWWWWgg.T..",
-        "..gggWWWWggg.s..",
-        "..GgggWWgggG.T..",
-        "..GGggggggGG.T..",
-        "...GGggggGG..T..",
-        "...kk....kk..T..",
-    ], {**SKIN, "G": "#8d8f96", "g": "#6b6d74", "W": "#ececec", "T": "#7a5230", "o": "#f3f0d8"}),
-    "frodo": hobbit("#4a2e1a", "#4c6b3a", "#3a5530", "#8a6a3a", ring=True),
-    "sam": ([
-        "................",
-        "................",
-        "................",
-        ".....hhhhhh.....",
-        "....hhhhhhhh.pp.",
-        "....hssssssh.pp.",
-        "....hskssksh..b.",
-        ".....rssssr..bb.",
-        "....LLVLLVLLbbb.",
-        "...LLVVLLVVLLbb.",
-        "...sVVVVVVVVsbb.",
-        "....VVVVVVVV.b..",
-        "....PPPPPPPP....",
-        ".....PPPPPP.....",
-        ".....PP..PP.....",
-        "....ssh..hss....",
-    ], {**SKIN, "h": "#8a5a2b", "r": "#e39a8a", "p": "#8c8c8c", "b": "#6b4a2a",
-        "L": "#e8e2d0", "V": "#b5652b", "P": "#6b5235"}),
-    "legolas": ([
-        "................",
-        ".....YYYYYY.....",
-        "....YYYYYYYY.B..",
-        "....YssssssY..B.",
-        "...sYskssksYs.qB",
-        "....YssssssY..qB",
-        "....YYssssYY..qB",
-        "....YEEEEEEY..qB",
-        "...YEEeEEeEEY.qB",
-        "...EEEeEEeEEE.qB",
-        "...sEEeEEeEEs.qB",
-        "....EEEEEEEE..B.",
-        "....eeeeeeee.B..",
-        "....eee..eee....",
-        "....nnn..nnn....",
-        "....nnn..nnn....",
-    ], {**SKIN, "Y": "#e8d27a", "E": "#5f8a3e", "e": "#46682c", "B": "#8a5a2b",
-        "q": "#d8d8d8", "n": "#5a3d24"}),
-    "gimli": ([
-        "................",
-        "................",
-        ".....MMMMMM.....",
-        "....MMMMMMMM....",
-        "...mMMMMMMMMm...",
-        "....ssssssss.AA.",
-        "....skssssks.AAA",
-        "...RRssssssRR.T.",
-        "..RRRRRRRRRRRRT.",
-        "..DRRRRRRRRRRsT.",
-        "..DDRRRrRRRRDDT.",
-        "..DDDRrRRrRDDDT.",
-        "..DDDDrRRrDDDDT.",
-        "..DDDDDDDDDDDD..",
-        "...nnnn..nnnn...",
-        "...nnnn..nnnn...",
-    ], {**SKIN, "M": "#9a9a9a", "m": "#6e6e6e", "R": "#c4512a", "r": "#9a3a1c",
-        "D": "#6b3a2a", "A": "#c9c9c9", "T": "#7a5230", "n": "#4a3020"}),
-    "sauron": ([
-        "....S..SS..S....",
-        "....SS.SS.SS....",
-        "....HHHHHHHH....",
-        "...HHHHHHHHHH.M.",
-        "...HhhhhhhhhHMmM",
-        "...HheehheehH.M.",
-        "...HhhhhhhhhH.T.",
-        "....HHhhhhHH..T.",
-        "..PPPAAAAAAPPPT.",
-        ".PPPPAAaaAAPPgT.",
-        ".PP.AAAaaAAA.gT.",
-        ".gg.AAAaaAAA..T.",
-        "....CCCCCCCC..T.",
-        "...CCCcCCcCCC...",
-        "...CCCcCCcCCC...",
-        "....AAA..AAA....",
-    ], {"S": "#6a6a76", "H": "#45454f", "h": "#121216", "e": "#ff7a1a", "P": "#5a5a66",
-        "A": "#3c3c46", "a": "#8a3a1e", "g": "#5a5a66", "C": "#2e2a30", "c": "#45454f",
-        "M": "#6a6a76", "m": "#a0a0aa", "T": "#2a2a30"}),
+# Digit keys: no character palette uses them, so smoke never recolors a beard or a cloak.
+SMOKE = {"1": "#9e978a", "2": "#b8b1a3", "3": "#e0662e", "4": "#ffb04a", "5": "#5a3a1e", "6": "#8a6038",
+         "z": "#7a4a30"}
+# Drawn into the empty top-left corner.
+BADGES = {
+    "blocked": ([".oo.", "o!!o", "o!!o", "o!!o", "o!!o", ".oo.", "o!!o", ".oo."], {"!": "#e0461c"}),
+    "done": ([".@@*.", "@...@", "@...@", "@...@", ".@@@."], {"@": "#d4a017", "*": "#fff4b0"}),
 }
 
-def walk(rows):
-    """Body up a pixel, legs and feet spread: the hobbits' second step."""
-    return rows[1:14] + [rows[13], "....PP....PP....", "...ssh....hss..."]
 
-
-def replace_rows(rows, changes):
+def asleep(rows, eye_rows):
+    """Closes the eyes: the upper eye rows turn to skin, the lowest one to a lid line."""
     out = list(rows)
-    for y, row in changes.items():
-        out[y] = row
+    *upper, lower = eye_rows
+    for y in upper:
+        out[y] = out[y].replace("k", "s")
+    out[lower] = out[lower].replace("k", "z")
     return out
 
 
-def second_frames():
-    g_rows, g_pal = SPRITES["gandalf"]
-    l_rows, l_pal = SPRITES["legolas"]
-    gi_rows, gi_pal = SPRITES["gimli"]
-    frames = {
-        # Casting: sparks burst from the staff.
-        "gandalf": (replace_rows(g_rows, {
-            0: "......G......b..",
-            1: ".....GG....b.o.b",
-            2: ".....GGG....ooo.",
-            3: "....GGGG...boOob",
-            4: "....GGGGG...ooo.",
-            5: "..GGGGGGGGGGbTb.",
-        }), {**g_pal, "b": "#8fd0ff", "O": "#ffffff"}),
-        # Drawing the bow, an arrow on the string.
-        "legolas": (replace_rows(l_rows, {
-            8: "...YEEeEEeEEYq.B",
-            9: "...EEEeEEeEEsaaA",
-            10: "...sEEeEEeEEsq.B",
-        }), {**l_pal, "a": "#c9c9c9", "A": "#e8e8e8"}),
-        # Axe raised overhead.
-        "gimli": (replace_rows(gi_rows, {
-            0: "................",
-            1: "................",
-            2: ".....MMMMMM..AA.",
-            3: "....MMMMMMMM.AAA",
-            4: "...mMMMMMMMMm.T.",
-            5: "....ssssssss..T.",
-            6: "....skssssks.sT.",
-            7: "...RRssssssRR.T.",
-            8: "..RRRRRRRRRRRR..",
-            9: "..DRRRRRRRRRRD..",
-            10: "..DDRRRrRRRRDD..",
-            11: "..DDDRrRRrRDDD..",
-            12: "..DDDDrRRrDDDD..",
-        }), {**gi_pal}),
+def smoke(rows, bowl, low):
+    """Pipe ember and a smoke ring: low on the first idle frame, high on the second."""
+    bx, by = bowl
+    wisp = [] if low else [(bx + (1 if bx < SIZE // 2 else -1), by - 3, "2")]
+    return put(rows, [(bx, by, "3")] + ring(bx, by - 4 if low else by - 8, "1") + wisp)
+
+
+def hero(name):
+    """A character's base pose and palette."""
+    if name == "frodo":
+        return FRODO, FRODO_PAL
+    if name == "sam":
+        return SAM, SAM_PAL
+    if name == "legolas":
+        return bow(LEGOLAS, "rest"), {**LEGOLAS_PAL, **BOW}
+    if name == "gimli":
+        return gimli_axe_low(GIMLI), GIMLI_PAL
+    if name == "gandalf":
+        return under(GANDALF_STAFF, GANDALF), GANDALF_PAL
+    if name == "sauron":
+        return sauron_mace_low(SAURON), SAURON_PAL
+    raise KeyError(name)
+
+
+def gimli_axe_low(rows):
+    return stamp(rows, 18, 10, [
+        "...o..",
+        "..oTo.",
+        "...To.",
+        "...To.",
+        "...To.",
+        "...To.",
+        "...so.",
+        "...so.",
+        "..oTo.",
+        ".ooToo",
+        "oAATAA",
+        "oAwTAA",
+        ".ooToo",
+        "...o..",
+    ])
+
+
+def sauron_mace_low(rows):
+    return stamp(rows, 17, 18, [
+        ".oTo..",
+        ".oTo..",
+        ".omo..",
+        "oMMMo.",
+        "mMwMm.",
+        "oMMMo.",
+    ])
+
+
+def frodo_frames():
+    base, pal = hero("frodo")
+    pal = {**pal, **SMOKE, "X": "#e4f3ff", "x": "#8cc8ff", "b": "#5ab0ff", "g": "#c9a34a", "p": "#6b4a2a"}
+    body = shift_left(base, 2)
+    body = stamp(body, 14, 19, ["oCCo"])
+    up = stamp(body, 15, 0, [
+        "..ooo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        "..oXo.",
+        ".ogggo",
+        "..oso.",
+        "..oCo.",
+        ".oCCo.",
+        ".oCo..",
+        "oCo...",
+    ])
+    up = put(up, [(20, 2, "b"), (16, 4, "b"), (20, 6, "b"), (21, 4, "x")])
+    strike = stamp(body, 15, 12, [
+        "..ooogoo.",
+        ".CCCsgXXX",
+        "..ooogooo",
+    ])
+    strike = put(strike, [(18, 2, "x"), (20, 3, "b"), (21, 4, "b"), (22, 6, "b"), (23, 8, "b"), (23, 10, "x"), (22, 11, "x")])
+    pipe = [(13, 11, "p"), (14, 11, "p"), (15, 11, "p"), (16, 11, "p"), (17, 11, "p"), (18, 11, "5"), (19, 11, "5"),
+            (18, 12, "o"), (19, 12, "o"), (20, 11, "o"), (20, 10, "o"), (17, 12, "s")]
+    still = asleep(base, [8, 9])
+    return pal, {
+        "frodo": base, "frodo-work": up, "frodo-2": strike,
+        "frodo-idle": smoke(put(still, pipe + [(19, 10, "5")]), (18, 10), True),
+        "frodo-idle-2": put(smoke(put(still, pipe + [(19, 10, "5")]), (18, 10), False), [(18, 10, "4")]),
     }
-    s_rows, s_pal = SPRITES["sauron"]
-    # The Eye flares: flames on the crown, eyes white-hot, the mace burning.
-    frames["sauron"] = (replace_rows(s_rows, {
-        0: "...fSf.SS.fSf...",
-        1: "....SSfSSfSS....",
-        3: "...HHHHHHHHHHfMf",
-        4: "...HhhhhhhhhHMFM",
-        5: "...HhEEhhEEhH.M.",
-    }), {**s_pal, "f": "#ff9a2a", "F": "#ffd04a", "E": "#ffe08a"})
-    for hobbit_name in ("frodo", "sam"):
-        rows, pal = SPRITES[hobbit_name]
-        frames[hobbit_name] = (walk(rows), pal)
-    return frames
+
+
+def sam_frames():
+    base, pal = hero("sam")
+    pal = {**pal, **SMOKE, "N": "#3c3c44", "z": "#7a4a30", "w": "#9aa8bc", "*": "#ffd84a", "p": "#6b4a2a", "b": "#7a5230",
+           "t": "#c8b89a"}
+    body = stamp(base, 16, 19, ["o,,,"])
+    body = put(body, [(16, 18, "o"), (17, 18, "o"), (18, 18, "o"), (19, 18, ".")])
+    pan = ["...oooo.", "..oNNNNo", "..oNwNNo", "..oNNwNo", "..oNNNNo", "...oooo."]
+    up = stamp(body, 16, 0, pan + [
+        "...obo..",
+        "...obo..",
+        "...oso..",
+        "..oLLo..",
+        "..oLLo..",
+        ".oLLo...",
+        ".oLLo...",
+        "oLLo....",
+    ])
+    strike = stamp(body, 16, 6, pan + [
+        "....obo.",
+        "..ooosoo",
+        "LLLLLso.",
+        "LLLooo..",
+    ])
+    strike = put(strike, [(23, 5, "*"), (22, 4, "*"), (23, 3, "*"), (21, 1, "t"), (23, 3, "*"), (19, 1, "t"), (22, 2, "t")])
+    pipe = [(10, 11, "p"), (9, 11, "p"), (8, 11, "p"), (7, 11, "p"), (6, 11, "p"), (5, 11, "5"), (4, 11, "5"),
+            (5, 12, "o"), (4, 12, "o"), (3, 11, "o"), (3, 10, "o"), (6, 12, "s")]
+    still = asleep(base, [8, 9])
+    return pal, {
+        "sam": base, "sam-work": up, "sam-2": strike,
+        "sam-idle": smoke(put(still, pipe + [(4, 10, "5")]), (5, 10), True),
+        "sam-idle-2": put(smoke(put(still, pipe + [(4, 10, "5")]), (5, 10), False), [(5, 10, "4")]),
+    }
+
+
+BOW = {"B": "#6b3e1a", "j": "#9a9a9a", "a": "#8a6a3a", "A": "#b0b6c0", "w": "#c8b88a", "f": "#c94a2a"}
+
+
+def bow(rows, mode):
+    """The bow in the hand held out to the side: resting, drawn, or just loosed."""
+    pts = [(20, 4, "B"), (21, 5, "B"), (22, 6, "B")] + col(22, range(7, 20), "B") + [(22, 20, "B"), (21, 21, "B"), (20, 22, "B")]
+    pts += [(19, 12, "o"), (20, 12, "o"), (19, 13, "E"), (20, 13, "E"), (20, 14, "o"), (21, 12, "o"), (21, 13, "s"), (21, 14, "o"),
+            (23, 12, "o"), (23, 13, "s"), (23, 14, "o")]
+    if mode == "drawn":
+        string = [(20, 5), (19, 6), (19, 7), (18, 8), (18, 9), (17, 10), (17, 11), (16, 12),
+                  (16, 14), (17, 15), (17, 16), (18, 17), (18, 18), (19, 19), (19, 20), (20, 21)]
+        pts += [(x, y, "j") for x, y in string]
+        pts += [(x, 13, "a") for x in range(15, 21)] + [(22, 13, "a"), (23, 13, "A"), (13, 12, "f"), (13, 14, "f"), (14, 13, "f"),
+                                                      (16, 13, "s"), (15, 13, "s")]
+    else:
+        pts += [(20, y, "j") for y in range(5, 22) if y not in (12, 13, 14)]
+    if mode == "loose":
+        pts += [(18, 2, "a"), (19, 2, "a"), (20, 2, "a"), (21, 2, "a"), (22, 2, "A"), (23, 1, "A"), (16, 2, "w"), (14, 2, "w"),
+                (17, 1, "f"), (17, 3, "f"), (19, 9, "j"), (18, 16, "j")]
+    return put(rows, pts)
+
+
+def legolas_frames():
+    base, pal = hero("legolas")
+    pal = {**pal, "L": "#f0e2b8", "l": "#a8c45a", "z": "#8a5a40"}
+    draw = bow(LEGOLAS, "drawn")
+    loose = bow(LEGOLAS, "loose")
+    still = asleep(base, [8, 9])
+    hand_up = stamp(still, 4, 19, ["oEEo"])
+    lembas_low = put(hand_up, [(6, 14, "o"), (7, 14, "o"), (8, 14, "o"), (9, 14, "o"), (6, 15, "o"), (7, 15, "L"), (8, 15, "L"), (9, 15, "o"),
+                               (6, 16, "o"), (7, 16, "l"), (8, 16, "l"), (9, 16, "o"), (6, 17, "s"), (7, 17, "s"), (8, 17, "o")])
+    lembas_high = put(hand_up, [(7, 10, "o"), (8, 10, "o"), (9, 10, "o"), (7, 11, "o"), (8, 11, "L"), (9, 11, "L"), (10, 11, "o"),
+                                (7, 12, "o"), (8, 12, "l"), (9, 12, "l"), (10, 12, "o"), (7, 13, "s"), (8, 13, "s"), (9, 13, "o")])
+    return pal, {"legolas": base, "legolas-work": draw, "legolas-2": loose,
+                 "legolas-idle": lembas_low, "legolas-idle-2": lembas_high}
+
+
+def gimli_frames():
+    base, pal = hero("gimli")
+    pal = {**pal, **SMOKE, "A": "#c9ccd2", "w": "#f2f2f4", "T": "#7a5230", "*": "#ffd84a", "z": "#8a5a40", "p": "#6b4a2a"}
+    noarm = stamp(GIMLI, 16, 13, [
+        "..o,,,,.",
+        "..,,,,,.",
+        "..,,,,,.",
+        "o,,,,,,.",
+        "o,,,,,,.",
+    ])
+    noarm = put(noarm, [(17, 13, "D"), (17, 14, "o"), (17, 15, "o"), (18, 13, "o")])
+    up = stamp(noarm, 17, 0, [
+        "..oo.oo",
+        ".oAATAA",
+        ".oAwTAA",
+        "..ooToo",
+        "...oTo.",
+        "...oTo.",
+        "...oTo.",
+        "..ossso",
+        "..ossso",
+        "..oDDo.",
+        "..oDDo.",
+        "..DDo..",
+    ])
+    strike = stamp(gimli_axe_low(GIMLI), 18, 19, [
+        "..oTo.",
+        ".ooToo",
+        "oAATAA",
+        "oAwTAA",
+        ".ooToo",
+    ])
+    strike = put(strike, [(18, 18, "*"), (17, 20, "*"), (17, 23, "*"), (22, 1, "w"), (23, 3, "w"), (23, 6, "w"), (23, 9, "w"), (22, 12, "w")])
+    pipe = [(8, 11, "p"), (7, 11, "p"), (6, 11, "p"), (5, 11, "p"), (4, 11, "5"), (3, 11, "5"), (4, 12, "o"), (3, 12, "o"),
+            (2, 11, "o"), (2, 10, "o"), (3, 10, "5"), (5, 12, "s")]
+    still = asleep(base, [8])
+    return pal, {"gimli": base, "gimli-work": up, "gimli-2": strike,
+                 "gimli-idle": smoke(put(still, pipe), (4, 10), True),
+                 "gimli-idle-2": put(smoke(put(still, pipe), (4, 10), False), [(4, 10, "4")])}
+
+
+def gandalf_frames():
+    base, pal = hero("gandalf")
+    pal = {**pal, **SMOKE, "b": "#8fd0ff", "B": "#4aa8ff", "z": "#8a5a40", "p": "#6b4a2a", "X": "#ffffff", "x": "#cfe6ff"}
+    charge = put(base, [(19, 3, "x"), (16, 1, "b"), (22, 0, "b"), (22, 5, "b"), (15, 4, "b")])
+    rays = [(19, 0, "X"), (19, 1, "x"), (16, 3, "X"), (17, 3, "x"), (21, 3, "x"), (22, 3, "X"), (23, 3, "b"),
+            (17, 1, "x"), (16, 0, "b"), (21, 1, "x"), (22, 0, "b"), (21, 5, "x"), (22, 6, "b"), (15, 3, "b"), (14, 3, "B"),
+            (16, 5, "B"), (23, 7, "B"), (19, 3, "X"), (18, 2, "X"), (20, 2, "X"), (18, 4, "x"), (20, 4, "x"),
+            (17, 23, "b"), (16, 22, "B"), (21, 23, "b"), (22, 22, "B"), (18, 22, "x"), (20, 22, "x")]
+    burst = put(base, rays)
+    pipe = [(8, 12, "p"), (7, 12, "p"), (6, 13, "p"), (5, 13, "p"), (4, 13, "5"), (3, 13, "5"), (4, 14, "o"), (3, 14, "o"),
+            (2, 13, "o"), (2, 12, "o"), (3, 12, "5"), (6, 14, "s"), (5, 14, "s")]
+    still = asleep(base, [10])
+    return pal, {"gandalf": base, "gandalf-work": charge, "gandalf-2": burst,
+                 "gandalf-idle": smoke(put(still, pipe), (4, 12), True),
+                 "gandalf-idle-2": put(smoke(put(still, pipe), (4, 12), False), [(4, 12, "4")])}
+
+
+def sauron_frames():
+    base, pal = hero("sauron")
+    pal = {**pal, "E": "#ffe08a", "f": "#ff9a2a", "F": "#ffd04a", "d": "#7a2a10", "w": "#c8c8d0"}
+    eyes = [(9, 5), (10, 5), (13, 5), (14, 5)]
+    noarm = stamp(SAURON, 16, 12, [",,,,,"] * 7)
+    up = stamp(noarm, 16, 0, [
+        "....omo.",
+        "...oMMMo",
+        "...mMwMm",
+        "...oMMMo",
+        "....oTo.",
+        "...oGGGo",
+        "...oGGGo",
+        "...oAAo.",
+        "..oAAo..",
+    ])
+    up = put(up, [(x, y, "E") for x, y in eyes])
+    strike = stamp(SAURON, 16, 18, [
+        "..oTo..",
+        "f.oTo.f",
+        "..omo..",
+        "FoMMMoF",
+        ".mMwMm.",
+        "foMMMof",
+    ])
+    strike = put(strike, [(x, y, "E") for x, y in eyes] + [(9, 0, "f"), (14, 0, "f"), (11, 0, "F"), (12, 0, "F"),
+                                                          (22, 2, "w"), (23, 5, "w"), (23, 9, "w"), (23, 13, "w")])
+    dim = put(base, [(x, y, "d") for x, y in eyes])
+    return pal, {"sauron": base, "sauron-work": up, "sauron-2": strike, "sauron-idle": dim, "sauron-idle-2": base}
+
+
+CAST = ["gandalf", "frodo", "sam", "legolas", "gimli", "sauron"]
+FRAMES = (gandalf_frames, frodo_frames, sam_frames, legolas_frames, gimli_frames, sauron_frames)
+POSES = dict(zip(CAST, (frames() for frames in FRAMES)))
+# Base pose with the character's full palette, every pose's colors included.
+SPRITES = {name: (poses[name], palette) for name, (palette, poses) in POSES.items()}
+
+
+def badged(name, badge):
+    rows, palette = SPRITES[name]
+    mark, colors = BADGES[badge]
+    for y, line in enumerate(mark):
+        for x, c in enumerate(line):
+            assert c == "." or rows[y][x] == ".", f"{badge} badge covers {name} at {x},{y}"
+    return stamp(rows, 0, 0, mark), {**palette, **colors}
+
+
+def all_sprites():
+    """Every agent sprite: base, battle, idle and badge poses."""
+    table = {}
+    for palette, poses in POSES.values():
+        for key, rows in poses.items():
+            table[key] = (rows, palette)
+    for name in CAST:
+        for badge in BADGES:
+            table[f"{name}-{badge}"] = badged(name, badge)
+    return table
 
 
 EMBLEMS = {
@@ -325,52 +649,22 @@ EMBLEMS = {
 }
 
 
-# Row of the eyes, the eye pixel, and the closed-lid color for the idle sprite.
-EYES = {"gandalf": (7, "k", "#b07a52"), "frodo": (6, "k", "#b07a52"), "sam": (6, "k", "#b07a52"),
-        "legolas": (4, "k", "#b07a52"), "gimli": (6, "k", "#b07a52"), "sauron": (5, "e", "#5a2414")}
-# Drawn into the empty top-left corner; keys are chars no sprite palette uses.
-BADGES = {
-    "blocked": ([".!!.", ".!!.", ".!!.", "....", ".!!."], {"!": "#d9481f"}),
-    "done": ([".@*.", "@..@", "@..@", ".@@."], {"@": "#d4a017", "*": "#fff4b0"}),
-}
-
-
-def asleep(name):
-    rows, palette = SPRITES[name]
-    y, eye, lid = EYES[name]
-    assert eye in rows[y], f"{name} has no {eye!r} eyes on row {y}"
-    return replace_rows(rows, {y: rows[y].replace(eye, "_")}), {**palette, "_": lid}
-
-
-def badged(name, badge):
-    rows, palette = SPRITES[name]
-    mark, colors = BADGES[badge]
-    out = list(rows)
-    for y, line in enumerate(mark):
-        for x, c in enumerate(line):
-            if c == ".":
-                continue
-            assert out[y][x] == ".", f"{badge} badge covers {name} at {x},{y}"
-            out[y] = out[y][:x] + c + out[y][x + 1:]
-    return out, {**palette, **colors}
-
-
 def svg(rows, palette):
-    assert len(rows) == SIZE, f"{len(rows)} rows"
+    size = len(rows)
     rects = []
     for y, row in enumerate(rows):
-        assert len(row) == SIZE, f"row {y} has {len(row)} cols: {row!r}"
+        assert len(row) == size, f"row {y} has {len(row)} cols: {row!r}"
         x = 0
-        while x < SIZE:
+        while x < size:
             c = row[x]
             run = 1
-            while x + run < SIZE and row[x + run] == c:
+            while x + run < size and row[x + run] == c:
                 run += 1
             if c != ".":
                 rects.append(f'<rect x="{x}" y="{y}" width="{run}" height="1" fill="{palette[c]}"/>')
             x += run
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" '
-            f'width="{SIZE}" height="{SIZE}" shape-rendering="crispEdges">' + "".join(rects) + "</svg>\n")
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" '
+            f'width="{size}" height="{size}" shape-rendering="crispEdges">' + "".join(rects) + "</svg>\n")
 
 
 def write_all(table, folder):
@@ -380,125 +674,10 @@ def write_all(table, folder):
             f.write(svg(rows, palette))
 
 
-
-# Gandalf rests with his pipe: ember on the bowl, a smoke ring rising up the left side.
-GANDALF_SMOKE = {"r": "#9e978a", "w": "#b4ad9f", "e": "#e0662e", "E": "#ffb04a", "b": "#5a3a1e", "p": "#7a5230"}
-GANDALF_IDLE = {
-    "gandalf-idle": {
-        2: ".r...GGG........",
-        3: "r.r.GGGG........",
-        4: ".r..GGGGG....o..",
-        6: ".w..ssssss...T..",
-        7: ".e..s_ss_s...T..",
-        8: ".bppWWWWWW...T..",
-        9: ".bsgWWWWWWg..T..",
-    },
-    "gandalf-idle-2": {
-        0: ".r....G.........",
-        1: "r.r..GG.........",
-        2: ".r...GGG........",
-        4: "w...GGGGG....o..",
-        5: ".wGGGGGGGGGG.T..",
-        7: ".E..s_ss_s...T..",
-        8: ".bppWWWWWW...T..",
-        9: ".bsgWWWWWWg..T..",
-    },
-}
-
-
-def gandalf_idle():
-    rows, palette = asleep("gandalf")
-    return {name: (replace_rows(rows, changes), {**palette, **GANDALF_SMOKE}) for name, changes in GANDALF_IDLE.items()}
-
-
-def put(rows, points):
-    """Draws (x, y, char) points on empty pixels; char "." erases."""
-    out = list(rows)
-    for x, y, c in points:
-        assert c == "." or out[y][x] == ".", f"pixel {x},{y} is taken by {out[y][x]!r}"
-        out[y] = out[y][:x] + c + out[y][x + 1:]
-    return out
-
-
-def ring(cx, top, c="r"):
-    return [(cx, top, c), (cx - 1, top + 1, c), (cx + 1, top + 1, c), (cx, top + 2, c)]
-
-
-# Digit keys: no sprite palette uses them, so smoke never recolors a beard or a pack.
-SMOKE = {"1": "#9e978a", "2": "#b4ad9f", "3": "#e0662e", "4": "#ffb04a", "5": "#5a3a1e", "6": "#7a5230"}
-
-
-def smoker(name, pipe, ember, cx, wisps):
-    """Two idle frames: the pipe lit, a smoke ring low then high."""
-    rows, palette = asleep(name)
-    pal = {**palette, **SMOKE}
-    low = put(rows, pipe + [(*ember, "3")] + ring(cx, 2, "1"))
-    high = put(rows, pipe + [(*ember, "4")] + ring(cx, 0, "1") + [(x, y, "2") for x, y in wisps])
-    return {f"{name}-idle": (low, pal), f"{name}-idle-2": (high, pal)}
-
-
-def animations():
-    frames = dict(gandalf_idle())
-    frames.update(smoker("frodo", [(13, 6, "5"), (13, 7, "5"), (11, 7, "6"), (12, 7, "6"), (13, 8, "s")], (13, 5), 13, [(14, 4)]))
-    frames.update(smoker("sam", [(2, 6, "5"), (2, 7, "5"), (3, 7, "6"), (4, 7, "6"), (2, 8, "s")], (2, 5), 2, [(1, 4)]))
-    frames.update(smoker("gimli", [(1, 7, "5"), (2, 7, "6"), (1, 8, "s")], (1, 6), 1, [(0, 4), (1, 5)]))
-
-    # Legolas is an elf: no pipe, a lembas taken bite by bite.
-    rows, pal = asleep("legolas")
-    pal = {**pal, "L": "#eadbb0", "l": "#5f8a3e"}
-    frames["legolas-idle"] = (put(rows, [(1, 8, "L"), (2, 8, "L"), (1, 9, "L"), (2, 9, "L"), (1, 10, "l"), (2, 10, "l")]), pal)
-    frames["legolas-idle-2"] = (put(rows, [(3, 10, "."), (1, 5, "L"), (2, 5, "L"), (2, 6, "L"), (1, 7, "l"), (2, 7, "l"), (3, 6, "s"), (0, 9, "L")]), pal)
-
-    # The Eye smoulders while Sauron waits.
-    rows, pal = asleep("sauron")
-    frames["sauron-idle"] = (rows, pal)
-    frames["sauron-idle-2"] = (rows, {**pal, "_": "#a8401a"})
-
-    # Battle: a wind-up frame and a strike frame.
-    frames["gandalf-work"] = SPRITES["gandalf"]
-    frames["gandalf-2"] = second_frames()["gandalf"]
-
-    rows, pal = SPRITES["frodo"]
-    sting = {**pal, "S": "#dfeeff", "G": "#6ab8ff", "g": "#c9a34a"}
-    frames["frodo-work"] = (put(rows, [(13, y, "S") for y in range(2, 7)] + [(14, 3, "G"), (12, 5, "G"), (12, 7, "g"), (13, 7, "g"), (14, 7, "g"), (13, 8, "s")]), sting)
-    frames["frodo-2"] = (put(rows, [(12, 8, "s"), (13, 7, "g"), (14, 6, "S"), (15, 5, "S"), (13, 2, "G"), (14, 2, "G"), (15, 3, "G"), (15, 4, "G")]), sting)
-
-    rows, pal = SPRITES["sam"]
-    rows = put(rows, [(13, 4, "."), (14, 4, "."), (13, 5, "."), (14, 5, ".")])
-    pan = {**pal, "n": "#4a3020", "z": "#8aa0b8"}
-    frames["sam-work"] = (put(rows, [(x, y, "p") for x in (12, 13, 14) for y in (0, 1)] + [(13, 2, "n"), (13, 3, "n"), (13, 4, "s")]), pan)
-    frames["sam-2"] = (put(rows, [(12, 5, "s"), (13, 5, "n")] + [(x, y, "p") for x in (14, 15) for y in (3, 4, 5)] + [(12, 1, "z"), (13, 1, "z"), (14, 2, "z")]), pan)
-
-    rows, pal = SPRITES["legolas"]
-    frames["legolas-work"] = second_frames()["legolas"]
-    frames["legolas-2"] = (put(rows, [(11, 1, "f"), (12, 1, "a"), (13, 1, "a"), (14, 1, "a"), (15, 1, "A")]), {**pal, "f": "#5f8a3e", "a": "#8a6a3a", "A": "#9aa0a8"})
-
-    rows, pal = SPRITES["gimli"]
-    frames["gimli-work"] = second_frames()["gimli"]
-    swung = put(rows, [(13, 5, "."), (14, 5, "."), (13, 6, "."), (14, 6, "."), (15, 6, "."), (14, 7, "."), (14, 8, ".")])
-    frames["gimli-2"] = (put(swung, [(15, 11, "A"), (15, 12, "A"), (14, 13, "A"), (15, 13, "A"), (13, 14, "w"), (15, 14, "w")]), {**pal, "w": "#f2c230"})
-
-    rows, pal = SPRITES["sauron"]
-    frames["sauron-work"] = second_frames()["sauron"]
-    down = put(rows, [(14, 3, "."), (13, 4, "."), (14, 4, "."), (15, 4, "."), (14, 5, "."), (14, 6, "."), (14, 7, "."), (14, 8, ".")])
-    down = replace_rows(down, {5: down[5].replace("e", "E")})
-    frames["sauron-2"] = (put(down, [(15, 12, "M"), (14, 13, "M"), (15, 13, "F"), (15, 11, "f"), (13, 14, "f"), (15, 14, "f")]), {**pal, "E": "#ffe08a", "F": "#ffd04a", "f": "#ff9a2a"})
-    return frames
-
-
-def all_sprites():
-    """Every agent sprite: base and second battle frame, then the animated poses, then the badges."""
-    table = dict(SPRITES)
-    table.update({f"{k}-2": v for k, v in second_frames().items()})
-    table.update(animations())
-    for name in SPRITES:
-        for badge in BADGES:
-            table[f"{name}-{badge}"] = badged(name, badge)
-    return table
-
-
 if __name__ == "__main__":
     sprites = all_sprites()
+    for name, (rows, _) in sprites.items():
+        assert len(rows) == SIZE, f"{name} has {len(rows)} rows"
     write_all(sprites, os.path.join(HOME, "fellowship", "sprites"))
     write_all(EMBLEMS, os.path.join(HOME, "realms", "emblems"))
     print("ok", len(sprites), "sprites,", len(EMBLEMS), "emblems", file=sys.stderr)

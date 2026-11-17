@@ -73,7 +73,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
   - `programs.json` sets the `claude` and `shell` icons.
   - `settings.json` sets `sounds.done` and `sounds.blocked`, relative to the home.
   - `install.sh` merges both files.
-- **Art:** `tools/sprites.py` writes every SVG from 16x16 character grids, with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs.
+- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs.
 
 ## Watch out
 
