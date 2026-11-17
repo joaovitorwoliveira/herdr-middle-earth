@@ -1,0 +1,6 @@
+{
+  "programs": {
+    "claude": { "icon": "mods/fellowship/program-icons/claude.svg" },
+    "shell": { "icon": "mods/fellowship/program-icons/shell.svg", "tint": false }
+  }
+}

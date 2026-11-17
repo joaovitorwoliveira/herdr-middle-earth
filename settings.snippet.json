@@ -1,0 +1,7 @@
+{
+  "sounds": {
+    "enabled": true,
+    "done": "mods/fellowship/sounds/done-alert.mp3",
+    "blocked": "mods/fellowship/sounds/needs-you.mp3"
+  }
+}
