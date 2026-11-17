@@ -33,8 +33,10 @@ for theme in "${THEMES[@]}"; do
   keep_aside "$HERDR_HOME/themes/$theme.json"
   cp "$REPO/themes/$theme.json" "$HERDR_HOME/themes/"
 done
-keep_aside "$HERDR_HOME/layouts/$LAYOUT.json"
-cp "$REPO/layouts/$LAYOUT.json" "$HERDR_HOME/layouts/"
+for file in "$LAYOUT.json" "$LAYOUT.png"; do
+  keep_aside "$HERDR_HOME/layouts/$file"
+  cp "$REPO/layouts/$file" "$HERDR_HOME/layouts/"
+done
 
 # Sounds and program icons live in the person's own files, not the layout, so they are merged in.
 merge_json() {

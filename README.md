@@ -2,7 +2,9 @@
 
 A Lord of the Rings layout for the [Herdr](https://herdr.dev) desktop app. Your agents become the Fellowship and your spaces become the realms. Light mode is the Shire and dark mode is Mordor.
 
-![Middle-earth](preview.png)
+![Middle-earth in the Shire](preview.png)
+
+![Middle-earth in Mordor, with Sauron](docs/mordor.png)
 
 - **Agents:** Gandalf, Frodo, Sam, Legolas and Gimli, as animated pixel sprites. Sauron joins in dark mode.
   - **Idle:** they smoke a pipe.

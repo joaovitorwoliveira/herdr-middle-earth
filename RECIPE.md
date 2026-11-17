@@ -52,7 +52,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 
 ## Built from
 
-- **Layout:** a clone of `main` 0.1.16 (`layouts/middle-earth.json`). Root keys: `theme`, `ui_font`, `toast`, `titlebar`, `traffic_lights`.
+- **Layout:** a clone of `main` 0.1.16 (`layouts/middle-earth.json`). Root keys: `theme`, `ui_font`, `toast`, `titlebar`, `traffic_lights`, `preview` (`layouts/middle-earth.png`, which the settings screen shows).
 - **Shipped mods used as they are:** `workspace-chrome`, `tabs`, `pane`, `files` and `changes`.
 - **`fellowship`:** a clone of `agents`.
   - `castFor` assigns the characters, using `shared` / `setShared` and `settings().dark`.

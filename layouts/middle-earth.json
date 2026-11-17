@@ -189,5 +189,6 @@
     "light": "shire",
     "dark": "mordor"
   },
-  "ui_font": "Palatino"
+  "ui_font": "Palatino",
+  "preview": "layouts/middle-earth.png"
 }
