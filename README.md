@@ -23,14 +23,32 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
 
 - **Agents:** Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli, as animated pixel sprites. Sauron joins in dark mode.
   - **Idle:** they smoke a pipe.
-  - **Working:** they fight.
+  - **Working:** they fight. The longer they work, the further they go: "On the road", then "Far from home" after 10 minutes, "Into the Wild" after 30 and "Into Mordor" after an hour.
   - **Blocked:** they raise a `!`.
   - **Done:** they bring back the Ring.
-- **Model and context:** each card shows the agent's model and a bar for how much of its context window is used. Both are read off the agent's screen, so the bar needs a statusline that prints the percentage (see [Model and context](#model-and-context-optional)).
+- **Cards:** each agent's card stacks its model, its space in bold, its session name and a bar for how much of its context window is used, so a narrow sidebar still shows everything.
+- **Model and context:** both are read off the agent's screen, so the bar needs a statusline that prints the percentage (see [Model and context](#model-and-context-optional)).
 - **Spaces:** each space gets a realm emblem: Shire, Rivendell, Gondor, Rohan, Lórien, Moria or Mordor.
-- **Notifications:** toasts and macOS banners in character, with the sprite ("Gandalf returned from the quest").
+- **Notifications:** toasts and macOS banners in character, with the sprite. Each hero has a line of their own ("Gandalf arrives precisely when he means to", "Gimli won't take another step without you").
+- **Dock badge:** the Herdr icon shows how many agents are waiting for you.
 - **Status bar:** counts agents by state ("2 on the road · 1 awaiting counsel").
 - **Also included:** a Claude Code icon holding the Ring, a hobbit-door shell icon, the TeX Gyre Pagella font (a free Palatino clone, bundled), and custom alert sounds.
+
+## Rare editions
+
+<p align="center">
+  <img src="docs/rare.png" alt="Gandalf the White, King Elessar, Frodo Elf-friend, Samwise the Gardener, Prince Legolas, Gimli of Helm's Deep and Annatar as pixel sprites" width="640">
+</p>
+
+Every new agent has a **3% chance** of drawing a hero's rare edition. It keeps it until it closes, with its own name on the card and its own art in every state:
+
+- **Gandalf the White:** white robes and a white staff that bursts with light.
+- **King Elessar:** the silver crown and the White Tree, with Andúril glowing blue.
+- **Frodo Elf-friend:** the elven cloak of Lórien and the Phial of Galadriel.
+- **Samwise the Gardener:** a straw hat, a spade and a mallorn sapling to water.
+- **Prince Legolas:** the silver circlet of Mirkwood and two elven knives.
+- **Gimli of Helm's Deep:** helm and mail, keeping count of orcs on his axe handle.
+- **Annatar:** Sauron's fair form, forging a ring. Dark mode only, like Sauron.
 
 ## Install
 
@@ -82,6 +100,7 @@ The agent sprites are 24x24 grids and the realm emblems 16x16, all in `tools/spr
 ```sh
 python3 tools/sprites.py    # SVG sprites and realm emblems
 python3 tools/banners.py    # PNG banners for notifications (needs Pillow)
+python3 tools/header.py     # the cast strips at the top of this README (needs Pillow)
 ```
 
 `RECIPE.md` describes the whole build, for anyone (or any agent) rebuilding it from scratch.

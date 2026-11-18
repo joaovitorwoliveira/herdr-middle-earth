@@ -19,7 +19,7 @@ Open an issue with the bug template. Include your Herdr version (`herdr-app --ve
    ```sh
    python3 tools/sprites.py
    python3 tools/banners.py   # needs Pillow
-   python3 tools/header.py    # only if the base sprites changed
+   python3 tools/header.py    # only if the base or rare sprites changed
    ```
 
 4. Install your copy and check it. On macOS and Linux, `./install.sh` copies it into your Herdr home and runs `herdr-app check` on each mod. Your previous files go to `backups/middle-earth-<time>/`.

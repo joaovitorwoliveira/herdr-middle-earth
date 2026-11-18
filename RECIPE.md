@@ -13,12 +13,12 @@ The window is a row with no system title bar (`"titlebar": "none"`). The macOS w
 - **Sidebar, left, 268px** (min 44, max 480, not resizable), on `chrome`:
   - **Brand**, 46px: the shipped `workspace-chrome`. It is a window drag area.
   - **Spaces** (`realms`), weight 1, min 90: each space shows a 20px pixel emblem instead of a colored letter tile. There are seven realms in order: Shire, Rivendell, Gondor, Rohan, Lórien, Moria and Mordor.
-  - **Agents** (`fellowship`), weight 1, min 90: each agent row shows a 32px sprite, the character's name in semibold, and a status word in `muted` ("On the road", "Resting", "Awaits counsel", "Returned"). Below these sit the space and the tab title in 11.5px.
+  - **Agents** (`fellowship`), weight 1, min 90: each agent card shows a 36px sprite beside a stack of lines: the character's name in semibold with a status word in `dim` ("On the road", "Resting", "Awaits counsel", "Returned"), then the model, the space in semibold (in the priority view; grouped by space, the section header names it), the tab title in `dim`, and the context bar. Each line truncates on its own; the card's height follows the lines it has.
   - **Footer**, 69px: `workspace-chrome` with `{ "footer": true }` (Settings, Add machine).
 - **Work column**, right:
   - **Tabs**, 42px: the shipped `tabs`. It is a window drag area.
   - **Body**: a row with padding 8 and gap 8. The active tab's panes are cards: radius 10, a 1px `border` that turns `accent` on focus, and a 30px `pane` header always shown. A Files/Changes stack (368px, min 280, max 900) starts hidden on the right.
-  - **Status bar**, 28px (`fellowship-status`): the machine, the branch, then one colored dot and count per agent state that has agents: "N awaiting counsel" (blocked, in the `blocked` color), "N returned", "N on the road", "N resting". With no agents it says "The road is quiet". The palette hint sits on the far right.
+  - **Status bar**, 28px (`fellowship-status`): the machine, the branch, then one colored dot and count per agent state that has agents: "N awaiting counsel" (blocked, in the `blocked` color), "N returned", "N on the road", "N resting". With no agents it says "The road is quiet". The palette hint sits on the far right. It also puts the number of blocked agents on the Dock icon with `setBadge`, only when the number changes, and clears it at zero.
 
 Themes: `{ "light": "shire", "dark": "mordor" }` set on the layout.
 
@@ -30,7 +30,8 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 ## How it behaves
 
 - **Casting.** A new agent takes a random free member of Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli. If the system is dark when the agent appears, Sauron is one more member of the draw. The choice is kept per terminal address in shared `fellowship.cast`, so the character survives restarts and later theme changes. When every member is taken, the cast starts over: the next agent gets a random pick among the least-used members.
-- **Working:** the character fights. Two frames swap every 800ms:
+- **Rare editions.** A fresh casting has a 3% chance (`RARE_CHANCE` in `casting.js`) of drawing the hero's rare edition: Gandalf the White, King Elessar, Frodo Elf-friend, Samwise the Gardener, Prince Legolas, Gimli of Helm's Deep or Annatar. The display name is kept per terminal address in shared `fellowship.rare` and pruned with `fellowship.cast`. The card shows that name and the `<hero>-rare` sprites in every state; toasts and banners use them too.
+- **Working:** the character fights. Its status word follows how long it has worked: "On the road", "Far from home" from 10 minutes, "Into the Wild" from 30, "Into Mordor" from 60. Two frames swap every 800ms:
   - Gandalf: sparks burst from his staff.
   - Aragorn: draws his sword from its scabbard and thrusts.
   - Frodo: Sting glows blue.
@@ -45,8 +46,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 - **Blocked:** a still sprite with a red `!` in the top-left corner.
 - **Done:** a still sprite with a small gold Ring in the top-left corner.
 - **Toasts** (`fellowship-toast`, set as the layout's `toast`):
-  - "<program> finished" becomes "<Hero> returned from the quest".
-  - "<program> needs you" becomes "<Hero> awaits your counsel".
+  - "<program> finished" and "<program> needs you" become a line of the hero's own, from `HERO_LINES` ("Gandalf arrives precisely when he means to", "Sam won't go on without you"). Each line takes the display name, so a rare edition reads "Gandalf the White arrives…". Heroes without lines fall back to "<Hero> returned from the quest" and "<Hero> awaits your counsel".
   - The body reads "<program> · <body>" and the toast shows the matching 28px sprite.
   - Other toasts look like Herdr's own, with an 18px icon.
 - **System banners:** when the Herdr window is not active, the same text goes to the system too, with the character's 128px PNG as the picture.
@@ -63,18 +63,18 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 - **`fellowship`:** a clone of `agents`.
   - `castFor` assigns the characters, using `shared` / `setShared` and `settings().dark`.
   - `heroSprite` picks the pose. A two-frame swap is two stacked `image()`s whose `opacity` loops linearly from 7 to -6 and from -6 to 7. The over-range values clamp, so each frame stays fully on or fully off for half of the period: a crisp swap instead of a fade.
-  - Sprites are in `sprites/<hero>[-work|-2|-idle|-idle-2|-blocked|-done].svg`: six heroes with seven files each.
-  - The folder also holds `banners/<hero>-<blocked|done>.png`, `sounds/` and `program-icons/`.
+  - Sprites are in `sprites/<hero>[-work|-2|-idle|-idle-2|-blocked|-done].svg`: seven heroes with seven files each, and the same seven files for each rare edition as `<hero>-rare`.
+  - The folder also holds `banners/<hero>[-rare]-<blocked|done>.png`, `sounds/` and `program-icons/`.
 - **`fellowship-status`:** a clone of `workspace-status`, with counts from `agents()` by status.
 - **`fellowship-toast`:** a clone of `toast`.
-  - `heroOf()` matches the title against `/^(.+) (finished|needs you)$/`. It reads the terminal from `action.args.terminal` when the action is `agent.focus`, then looks up `fellowship.cast`.
+  - `heroOf()` matches the title against `/^(.+) (finished|needs you)$/`. It reads the terminal from `action.args.terminal` when the action is `agent.focus`, then looks up `fellowship.cast` and `fellowship.rare`.
   - `init()` posts to the system by `window().platform`. On macOS it uses `exec("terminal-notifier", [...])` with `-activate dev.herdr.app -contentImage <appHome>/<png>`, falling back to `osascript` if that fails. On Linux it uses `exec("notify-send", ["-a", "Herdr", "-i", <png>, title, body])`. It skips this when `window().active` or during `checking()`.
 - **`realms`:** a clone of `spaces`. It keeps each space's realm in shared `realms.emblems` and draws `emblems/<realm>.svg`.
 - **Outside the layout:**
   - `programs.json` sets the `claude` and `shell` icons.
   - `settings.json` sets `sounds.done` and `sounds.blocked`, relative to the home.
   - `install.sh` merges both files.
-- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs.
+- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs. `tools/header.py` draws the README's cast strips, `docs/header.png` and `docs/rare.png`. The SVGs declare width and height 36 over a 24x24 viewBox: Herdr rasterizes an SVG at its declared size, and a 24px raster stretched to 36 picks up faint lines at its edges.
 
 ## Watch out
 
@@ -102,6 +102,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 - `layout.switch {"name":"middle-earth"}` shows the Shire in light mode and Mordor in dark mode, in TeX Gyre Pagella.
 - Starting a Claude Code agent adds a random member (Sauron can be drawn when dark) with a working animation. When the agent waits, it switches to the idle pipe.
 - A second agent gets the next free character, and the characters stay the same after a restart.
-- A finished agent shows "<Hero> returned from the quest" with the Ring sprite and plays `done-alert.mp3`.
+- A finished agent shows its hero's done line with the Ring sprite and plays `done-alert.mp3`.
+- An agent that needs you puts a number on the Dock icon.
 - With another app in front and `terminal-notifier` installed, the same message arrives as a macOS banner with the sprite.
 - The status bar counts agents by state, or says "The road is quiet".
