@@ -15,6 +15,37 @@ const QUEST = {
   finished: { pose: "done", line: "returned from the quest" },
   "needs you": { pose: "blocked", line: "awaits your counsel" },
 };
+// Takes the display name so a variant (e.g. "Gandalf the White") can reuse its hero's lines.
+const HERO_LINES = {
+  gandalf: {
+    done: (name) => `${name} arrives precisely when he means to`,
+    blocked: (name) => `${name} will not pass without your word`,
+  },
+  aragorn: {
+    done: (name) => `${name} has returned, as was foretold`,
+    blocked: (name) => `${name} calls for aid`,
+  },
+  frodo: {
+    done: (name) => `${name}: "It's done."`,
+    blocked: (name) => `${name} does not know the way`,
+  },
+  sam: {
+    done: (name) => `${name}: "Well, I'm back."`,
+    blocked: (name) => `${name} won't go on without you`,
+  },
+  legolas: {
+    done: (name) => `${name} has found his mark`,
+    blocked: (name) => `${name} holds fire for your command`,
+  },
+  gimli: {
+    done: (name) => `${name} returned, axe notched`,
+    blocked: (name) => `${name} won't take another step without you`,
+  },
+  sauron: {
+    done: (name) => `${name}: the Eye is satisfied`,
+    blocked: (name) => `${name}: the Eye turns toward you`,
+  },
+};
 
 // Title and body go in as arguments, never into the script text, so quotes in them stay inert.
 const SYSTEM_NOTIFICATION = ["-e", "on run argv", "-e", "display notification (item 2 of argv) with title (item 1 of argv)", "-e", "end run"];
@@ -59,8 +90,9 @@ function heroOf(p) {
   const hero = terminal ? shared(CAST_KEY)?.[terminal] : null;
   if (!event || !hero) return null;
   const { pose, line } = QUEST[event[2]];
+  const name = `${hero[0].toUpperCase()}${hero.slice(1)}`;
   return {
-    title: `${hero[0].toUpperCase()}${hero.slice(1)} ${line}`,
+    title: HERO_LINES[hero]?.[pose](name) ?? `${name} ${line}`,
     body: p.body ? `${event[1]} · ${p.body}` : event[1],
     icon: `mods/fellowship/sprites/${hero}-${pose}.svg`,
     banner: `mods/fellowship/banners/${hero}-${pose}.png`,
