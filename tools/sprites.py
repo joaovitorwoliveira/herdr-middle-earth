@@ -829,11 +829,62 @@ def sauron_rare_frames():
     }
 
 
+# Ultra-rare: Gandalf the Grey nodding along to the Epic Sax Guy riff, after the "Gandalf Sax Guy" meme.
+GANDALF_SAX_HANDS = GANDALF[:18] + ["....oooG" "GGGwwGGG" "Gooo...."] + GANDALF[19:]
+SAX = [
+    ".....k..........",
+    "....oAo.........",
+    "...oYAo.........",
+    "..oYAao....ooooo",
+    "..oYAao...oYaaYo",
+    ".ossAao...oAYYAo",
+    "..oYAao....osso.",
+    "..oYAao...oYAo..",
+    "..oYAAo..oYAo...",
+    "...oaAAAAYao....",
+    "....oooooooo....",
+]
+SAX_PAL = {"Y": "#ffe27a", "A": "#e0a82e", "a": "#9a6418", "N": "#5a6cff"}
+HEAD_ROWS = 12
+HAT_TIP_ROWS = 5
+
+
+def shift(row, dx):
+    return "." * dx + row[:SIZE - dx] if dx >= 0 else row[-dx:] + "." * -dx
+
+
+def bob(rows, dx, raised):
+    """Moves the head dx sideways, and one pixel up when raised, with the hat tip leaning one pixel further."""
+    head = [shift(row, dx * 2 if y < HAT_TIP_ROWS else dx) for y, row in enumerate(rows[:HEAD_ROWS])]
+    if raised:
+        head = head[1:] + head[-1:]
+    return head + rows[HEAD_ROWS:]
+
+
+NOTE = [".NN", ".N.", "NN.", "NN."]
+
+
+def gandalf_sax_frames():
+    palette, _ = gandalf_frames()
+
+    def play(dx, raised):
+        return stamp(bob(GANDALF_SAX_HANDS, dx, raised), 6 + dx, 10 if raised else 11, SAX)
+
+    calm = stamp(asleep(GANDALF_SAX_HANDS, [10]), 6, 11, SAX)
+    return {**palette, **SAX_PAL}, {
+        "gandalf-sax": play(0, False),
+        "gandalf-sax-work": stamp(stamp(play(-1, True), 19, 9, NOTE), 16, 2, NOTE),
+        "gandalf-sax-2": stamp(stamp(play(1, False), 21, 9, NOTE), 21, 2, NOTE),
+        "gandalf-sax-idle": stamp(calm, 20, 9, NOTE),
+        "gandalf-sax-idle-2": stamp(calm, 21, 3, NOTE),
+    }
+
+
 CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli", "sauron"]
-RARE_CAST = [f"{name}-rare" for name in CAST]
+RARE_CAST = [f"{name}-rare" for name in CAST] + ["gandalf-sax"]
 FRAMES = (gandalf_frames, aragorn_frames, frodo_frames, sam_frames, legolas_frames, gimli_frames, sauron_frames,
           gandalf_rare_frames, aragorn_rare_frames, frodo_rare_frames, sam_rare_frames, legolas_rare_frames,
-          gimli_rare_frames, sauron_rare_frames)
+          gimli_rare_frames, sauron_rare_frames, gandalf_sax_frames)
 POSES = dict(zip(CAST + RARE_CAST, (frames() for frames in FRAMES)))
 # Base pose with the character's full palette, every pose's colors included.
 SPRITES = {name: (poses[name], palette) for name, (palette, poses) in POSES.items()}
