@@ -87,6 +87,15 @@ const STILL_STATES = new Set(["idle", "blocked", "done"]);
 const CAST_KEY = "fellowship.cast";
 const SPRITE_SIZE = 36;
 const MOOD = { working: "On the road", idle: "Resting", done: "Returned", blocked: "Awaits counsel" };
+const MINUTE = 60000;
+// Longest first: the first stage the agent has worked past names its mood.
+const ROAD_STAGES = [
+  { after: 60 * MINUTE, mood: "Into Mordor" },
+  { after: 30 * MINUTE, mood: "Into the Wild" },
+  { after: 10 * MINUTE, mood: "Far from home" },
+];
+const moodOf = (status, workingFor) =>
+  status === "working" ? (ROAD_STAGES.find((s) => workingFor >= s.after)?.mood ?? MOOD.working) : (MOOD[status] ?? "");
 const titleCase = (s) => s[0].toUpperCase() + s.slice(1);
 const STATS_PERIOD = 15000;
 const CTX_WARN = 50;
@@ -465,7 +474,7 @@ export default class Agents extends View {
         .child(v_flex().flex_1().min_w(0).gap(1)
           .when(Boolean(hero), el => el.child(h_flex().min_w(0).gap(6).items_center()
             .child(div().flex_none().font_semibold().text_color(t.foreground).child(titleCase(hero ?? "")))
-            .child(div().min_w(0).truncate().text_size(11).text_color(t.dim).child(MOOD[a.status] ?? ""))))
+            .child(div().min_w(0).truncate().text_size(11).text_color(t.dim).child(moodOf(a.status, when ? now - when : 0)))))
           .child(h_flex().min_w(0).gap(5).items_center().text_size(hero ? 11.5 : 13)
             .when(Boolean(stat?.model), el => el.child(div().flex_none().text_color(t.foreground).child(`${stat.model} \u00b7`)))
             .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle || hero ? t.muted : t.foreground).child(name))
