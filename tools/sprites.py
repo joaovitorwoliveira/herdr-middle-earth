@@ -5,6 +5,9 @@ import sys
 HOME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mods")
 # Agents are 24x24 grids, realm emblems 16x16. Each agent row is written as three 8-column chunks.
 SIZE = 24
+# Must match SPRITE_SIZE in fellowship/main.js. Herdr rasterizes an SVG from its width/height, so a
+# 24pt sprite stretched to 36pt gets resampled and picks up faint lines from its neighbors at the edges.
+AGENT_DISPLAY_SIZE = 36
 
 OUT = "#2a1e18"
 SKIN = {"o": OUT, "s": "#f2c9a0", "S": "#d9a07a", "k": "#1b1b1b", "m": "#a8604a", "r": "#e8968a"}
@@ -722,7 +725,7 @@ EMBLEMS = {
 }
 
 
-def svg(rows, palette):
+def svg(rows, palette, display_size):
     size = len(rows)
     rects = []
     for y, row in enumerate(rows):
@@ -737,20 +740,20 @@ def svg(rows, palette):
                 rects.append(f'<rect x="{x}" y="{y}" width="{run}" height="1" fill="{palette[c]}"/>')
             x += run
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" '
-            f'width="{size}" height="{size}" shape-rendering="crispEdges">' + "".join(rects) + "</svg>\n")
+            f'width="{display_size}" height="{display_size}" shape-rendering="crispEdges">' + "".join(rects) + "</svg>\n")
 
 
-def write_all(table, folder):
+def write_all(table, folder, display_size=None):
     os.makedirs(folder, exist_ok=True)
     for name, (rows, palette) in table.items():
         with open(os.path.join(folder, f"{name}.svg"), "w") as f:
-            f.write(svg(rows, palette))
+            f.write(svg(rows, palette, display_size or len(rows)))
 
 
 if __name__ == "__main__":
     sprites = all_sprites()
     for name, (rows, _) in sprites.items():
         assert len(rows) == SIZE, f"{name} has {len(rows)} rows"
-    write_all(sprites, os.path.join(HOME, "fellowship", "sprites"))
+    write_all(sprites, os.path.join(HOME, "fellowship", "sprites"), AGENT_DISPLAY_SIZE)
     write_all(EMBLEMS, os.path.join(HOME, "realms", "emblems"))
     print("ok", len(sprites), "sprites,", len(EMBLEMS), "emblems", file=sys.stderr)
