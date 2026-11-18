@@ -101,6 +101,8 @@ const STATS_PERIOD = 15000;
 const CTX_WARN = 50;
 const CTX_DANGER = 80;
 const CTX_BAR_HEIGHT = 3;
+const CARD_LINE_HEIGHT = 17;
+const CARD_PADDING_Y = 14;
 const STEP_PERIOD = 800;
 // Loops only ease; swinging far past 0..1 makes the opacity cross over in about one frame, a crisp swap.
 const SWAP_LOW = -6;
@@ -380,7 +382,7 @@ export default class Agents extends View {
         .when(!open, (el) => el.child(String(subs.length)));
     };
 
-    // A row reads "space \u00b7 detail": the detail is a tab someone named or the
+    // A row shows its space above a detail: the detail is a tab someone named or the
     // agent's own title, never an automatic tab number unless two rows would
     // otherwise read the same.
     // Read the pane snapshot once: every host read copies the whole list into JS.
@@ -445,10 +447,13 @@ export default class Agents extends View {
       const sprite = hero ? heroSprite(hero, a.status) : pic;
       const stat = this.stats[a.address];
       const hasCtx = stat?.ctx != null;
+      const place = full ? name : null;
+      const session = full ? more : name;
+      const lineCount = [hero, stat?.model, place, session, hasCtx].filter(Boolean).length;
       return h_flex()
         .id(`ag-${a.address}`)
         .px(8)
-        .h(hasCtx ? 60 : 48)
+        .h(CARD_PADDING_Y + Math.max(lineCount * CARD_LINE_HEIGHT, SPRITE_SIZE))
         .my(2)
         .flex_none()
         .rounded(8)
@@ -475,10 +480,10 @@ export default class Agents extends View {
           .when(Boolean(hero), el => el.child(h_flex().min_w(0).gap(6).items_center()
             .child(div().flex_none().font_semibold().text_color(t.foreground).child(titleCase(hero ?? "")))
             .child(div().min_w(0).truncate().text_size(11).text_color(t.dim).child(moodOf(a.status, when ? now - when : 0)))))
-          .child(h_flex().min_w(0).gap(5).items_center().text_size(hero ? 11.5 : 13)
-            .when(Boolean(stat?.model), el => el.child(div().flex_none().text_color(t.foreground).child(`${stat.model} \u00b7`)))
-            .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle || hero ? t.muted : t.foreground).child(name))
-            .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
+          .child(v_flex().min_w(0).gap(1).text_size(hero ? 11.5 : 13)
+            .when(Boolean(stat?.model), el => el.child(div().min_w(0).truncate().text_color(idle || hero ? t.muted : t.foreground).child(stat.model)))
+            .when(Boolean(place), el => el.child(div().min_w(0).truncate().font_semibold().text_color(t.foreground).child(place)))
+            .when(Boolean(session), el => el.child(div().min_w(0).truncate().text_color(t.dim).child(session))))
           .when(hasCtx, el => el.child(this.ctxBar(t, stat.ctx))))
         .when(Boolean(machine), el => el.child(div().text_size(10).text_color(t.dim).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
