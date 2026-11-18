@@ -30,7 +30,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 ## How it behaves
 
 - **Casting.** A new agent takes a random free member of Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli. If the system is dark when the agent appears, Sauron is one more member of the draw. The choice is kept per terminal address in shared `fellowship.cast`, so the character survives restarts and later theme changes. When every member is taken, the cast starts over: the next agent gets a random pick among the least-used members.
-- **Rare editions.** A fresh casting has a 3% chance (`RARE_CHANCE` in `casting.js`) of drawing the hero's rare edition: Gandalf the White, King Elessar, Frodo Elf-friend, Samwise the Gardener, Prince Legolas, Gimli of Helm's Deep or Annatar. The display name is kept per terminal address in shared `fellowship.rare` and pruned with `fellowship.cast`. The card shows that name and the `<hero>-rare` sprites in every state; toasts and banners use them too.
+- **Rare editions.** A fresh casting has a 3% chance (`RARE_CHANCE` in `casting.js`) of drawing the hero's rare edition: Gandalf the White, King Elessar, Frodo Elf-friend, Samwise the Gardener, Prince Legolas, Gimli of Helm's Deep or Annatar. When the draw lands on Gandalf, a 1% roll (`SAX_CHANCE`) comes first for the ultra rare Epic Sax Gandalf (`gandalf-sax` sprites). The edition is kept per terminal address in shared `fellowship.rare` as `{ name, sprite }` and pruned with `fellowship.cast`. The card shows that name and those sprites in every state; toasts and banners use them too.
 - **Working:** the character fights. Its status word follows how long it has worked: "On the road", "Far from home" from 10 minutes, "Into the Wild" from 30, "Into Mordor" from 60. Two frames swap every 800ms:
   - Gandalf: sparks burst from his staff.
   - Aragorn: draws his sword from its scabbard and thrusts.
@@ -63,7 +63,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 - **`fellowship`:** a clone of `agents`.
   - `castFor` assigns the characters, using `shared` / `setShared` and `settings().dark`.
   - `heroSprite` picks the pose. A two-frame swap is two stacked `image()`s whose `opacity` loops linearly from 7 to -6 and from -6 to 7. The over-range values clamp, so each frame stays fully on or fully off for half of the period: a crisp swap instead of a fade.
-  - Sprites are in `sprites/<hero>[-work|-2|-idle|-idle-2|-blocked|-done].svg`: seven heroes with seven files each, and the same seven files for each rare edition as `<hero>-rare`.
+  - Sprites are in `sprites/<hero>[-work|-2|-idle|-idle-2|-blocked|-done].svg`: seven heroes with seven files each, and the same seven files for each rare edition as `<hero>-rare`, plus `gandalf-sax`.
   - The folder also holds `banners/<hero>[-rare]-<blocked|done>.png`, `sounds/` and `program-icons/`.
 - **`fellowship-status`:** a clone of `workspace-status`, with counts from `agents()` by status.
 - **`fellowship-toast`:** a clone of `toast`.
@@ -74,7 +74,7 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
   - `programs.json` sets the `claude` and `shell` icons.
   - `settings.json` sets `sounds.done` and `sounds.blocked`, relative to the home.
   - `install.sh` merges both files.
-- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs. `tools/header.py` draws the README's cast strips, `docs/header.png` and `docs/rare.png`. The SVGs declare width and height 36 over a 24x24 viewBox: Herdr rasterizes an SVG at its declared size, and a 24px raster stretched to 36 picks up faint lines at its edges.
+- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs. `tools/header.py` draws the README's cast strips, `docs/header.png`, `docs/rare.png` and `docs/sax.png`. The SVGs declare width and height 36 over a 24x24 viewBox: Herdr rasterizes an SVG at its declared size, and a 24px raster stretched to 36 picks up faint lines at its edges.
 
 ## Watch out
 

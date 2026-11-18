@@ -50,6 +50,14 @@ Every new agent has a **3% chance** of drawing a hero's rare edition. It keeps i
 - **Gimli of Helm's Deep:** helm and mail, keeping count of orcs on his axe handle.
 - **Annatar:** Sauron's fair form, forging a ring. Dark mode only, like Sauron.
 
+### Ultra rare edition
+
+<p align="center">
+  <img src="docs/sax.png" alt="Epic Sax Gandalf playing a golden saxophone, in two frames" width="240">
+</p>
+
+When the draw lands on Gandalf, he has a **1% chance** of coming as **Epic Sax Gandalf**, a nod to the old Gandalf Sax Guy meme: the Grey Pilgrim on a golden saxophone, nodding to the riff while he works and letting one slow note drift up while he rests. That is about one agent in six hundred. If he shows up, you'll know.
+
 ## Install
 
 Made for Herdr 0.1.16. Tested on macOS. Linux and Windows should work but are untested.

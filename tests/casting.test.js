@@ -1,7 +1,7 @@
 // Run with: node --test tests/casting.test.js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickHero, rollRare } from "../mods/fellowship/casting.js";
+import { pickHero, drawEdition } from "../mods/fellowship/casting.js";
 
 const CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli"];
 const FIRST = () => 0;
@@ -31,9 +31,18 @@ test("fills a gap left by a closed agent before repeating", () => {
   assert.equal(pickHero(CAST, [...CAST, "gandalf", "aragorn"].filter((h) => h !== "sam"), LAST), "sam");
 });
 
+// Each draw takes the next number in turn, so a test can script both rolls.
+const rolls = (...values) => () => values.shift();
+
 test("a rare edition comes up 3% of the time", () => {
-  assert.equal(rollRare(() => 0), true);
-  assert.equal(rollRare(() => 0.029), true);
-  assert.equal(rollRare(() => 0.03), false);
-  assert.equal(rollRare(() => 0.5), false);
+  assert.equal(drawEdition("frodo", rolls(0.029)), "rare");
+  assert.equal(drawEdition("frodo", rolls(0.03)), null);
+  assert.equal(drawEdition("frodo", rolls(0.5)), null);
+});
+
+test("only Gandalf can draw the sax edition, 1% of the time, before the rare roll", () => {
+  assert.equal(drawEdition("gandalf", rolls(0.009)), "sax");
+  assert.equal(drawEdition("gandalf", rolls(0.01, 0.029)), "rare");
+  assert.equal(drawEdition("gandalf", rolls(0.5, 0.5)), null);
+  assert.equal(drawEdition("aragorn", rolls(0.009)), "rare");
 });

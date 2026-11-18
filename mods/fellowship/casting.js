@@ -7,5 +7,11 @@ export function pickHero(pool, heroes, random = Math.random) {
 }
 
 export const RARE_CHANCE = 0.03;
+export const SAX_CHANCE = 0.01;
+const SAX_HERO = "gandalf";
 
-export const rollRare = (random = Math.random) => random() < RARE_CHANCE;
+// The edition a fresh casting draws: "sax" (Gandalf only, tried first), "rare", or null.
+export function drawEdition(hero, random = Math.random) {
+  if (hero === SAX_HERO && random() < SAX_CHANCE) return "sax";
+  return random() < RARE_CHANCE ? "rare" : null;
+}

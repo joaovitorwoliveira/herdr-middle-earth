@@ -4,7 +4,7 @@ import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { agents, settings, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout, hc, checking } from "herdr";
 import { parseContext, parseModel } from "./agent-stats.js";
-import { pickHero, rollRare } from "./casting.js";
+import { pickHero, drawEdition } from "./casting.js";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -85,7 +85,7 @@ const CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli"];
 const DARK_LORD = "sauron";
 const STILL_STATES = new Set(["idle", "blocked", "done"]);
 const CAST_KEY = "fellowship.cast";
-// Terminal address to the display name of the rare edition it drew; the toast mod reads it too.
+// Terminal address to the edition it drew, { name, sprite }; the toast mod reads it too.
 const RARE_KEY = "fellowship.rare";
 const RARE_NAMES = {
   gandalf: "Gandalf the White",
@@ -96,6 +96,7 @@ const RARE_NAMES = {
   gimli: "Gimli of Helm's Deep",
   sauron: "Annatar",
 };
+const EDITION_NAMES = { rare: RARE_NAMES, sax: { gandalf: "Epic Sax Gandalf" } };
 const SPRITE_SIZE = 36;
 const MOOD = { working: "On the road", idle: "Resting", done: "Returned", blocked: "Awaits counsel" };
 const MINUTE = 60000;
@@ -137,7 +138,7 @@ function heroSprite(hero, status) {
 }
 
 // Each agent keeps the character it got first; a new one takes a random character nobody listed has.
-// Characters retired from the cast are recast. Only a fresh casting may draw a rare edition.
+// Characters retired from the cast are recast. Only a fresh casting may draw a rare or sax edition.
 function castFor(list, all) {
   const stored = shared(CAST_KEY) ?? {};
   const cast = { ...stored };
@@ -158,7 +159,8 @@ function castFor(list, all) {
     const hero = pickHero(pool, heroes);
     cast[a.address] = hero;
     changed = true;
-    if (rollRare()) { rare[a.address] = RARE_NAMES[hero]; rareChanged = true; }
+    const edition = drawEdition(hero);
+    if (edition) { rare[a.address] = { name: EDITION_NAMES[edition][hero], sprite: `${hero}-${edition}` }; rareChanged = true; }
     else if (rare[a.address]) { delete rare[a.address]; rareChanged = true; }
   }
   if (changed) setShared(CAST_KEY, cast);
@@ -462,8 +464,8 @@ export default class Agents extends View {
       const full = byPriority || isPinned;
       const name = full ? a.space_name || label(a) : more ?? (/^\d+$/.test(label(a)) ? a.program?.name || label(a) : label(a));
       const hero = cast[a.address];
-      const rareName = rare[a.address];
-      const sprite = hero ? heroSprite(rareName ? `${hero}-rare` : hero, a.status) : pic;
+      const edition = rare[a.address];
+      const sprite = hero ? heroSprite(edition?.sprite ?? hero, a.status) : pic;
       const stat = this.stats[a.address];
       const hasCtx = stat?.ctx != null;
       const place = full ? name : null;
@@ -497,7 +499,7 @@ export default class Agents extends View {
           })).child(sprite)))
         .child(v_flex().flex_1().min_w(0).gap(1)
           .when(Boolean(hero), el => el.child(h_flex().min_w(0).gap(6).items_center()
-            .child(div().min_w(0).truncate().font_semibold().text_color(t.foreground).child(rareName ?? titleCase(hero ?? "")))
+            .child(div().min_w(0).truncate().font_semibold().text_color(t.foreground).child(edition?.name ?? titleCase(hero ?? "")))
             .child(div().flex_1().min_w(0).truncate().text_size(11).text_color(t.dim).child(moodOf(a.status, when ? now - when : 0)))))
           .child(v_flex().min_w(0).gap(1).text_size(hero ? 11.5 : 13)
             .when(Boolean(stat?.model), el => el.child(div().min_w(0).truncate().text_color(idle || hero ? t.muted : t.foreground).child(stat.model)))
