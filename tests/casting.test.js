@@ -1,7 +1,7 @@
 // Run with: node --test tests/casting.test.js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pickHero } from "../mods/fellowship/casting.js";
+import { pickHero, rollRare } from "../mods/fellowship/casting.js";
 
 const CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli"];
 const FIRST = () => 0;
@@ -29,4 +29,11 @@ test("starts over when everyone is cast", () => {
 
 test("fills a gap left by a closed agent before repeating", () => {
   assert.equal(pickHero(CAST, [...CAST, "gandalf", "aragorn"].filter((h) => h !== "sam"), LAST), "sam");
+});
+
+test("a rare edition comes up 3% of the time", () => {
+  assert.equal(rollRare(() => 0), true);
+  assert.equal(rollRare(() => 0.029), true);
+  assert.equal(rollRare(() => 0.03), false);
+  assert.equal(rollRare(() => 0.5), false);
 });
