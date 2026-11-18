@@ -8,6 +8,8 @@ import { props, closeOverlay, run, theme, shared, exec, window, appHome, checkin
 
 // Written by the fellowship mod: terminal address to character.
 const CAST_KEY = "fellowship.cast";
+// Also written by the fellowship mod: terminal address to a rare edition's display name.
+const RARE_KEY = "fellowship.rare";
 const HERO_ICON_SIZE = 28;
 // Herdr's own agent toasts read "<program> finished" or "<program> needs you".
 const AGENT_TOAST = /^(.+) (finished|needs you)$/;
@@ -90,12 +92,14 @@ function heroOf(p) {
   const hero = terminal ? shared(CAST_KEY)?.[terminal] : null;
   if (!event || !hero) return null;
   const { pose, line } = QUEST[event[2]];
-  const name = `${hero[0].toUpperCase()}${hero.slice(1)}`;
+  const rareName = shared(RARE_KEY)?.[terminal];
+  const name = rareName ?? `${hero[0].toUpperCase()}${hero.slice(1)}`;
+  const sprite = rareName ? `${hero}-rare-${pose}` : `${hero}-${pose}`;
   return {
     title: HERO_LINES[hero]?.[pose](name) ?? `${name} ${line}`,
     body: p.body ? `${event[1]} · ${p.body}` : event[1],
-    icon: `mods/fellowship/sprites/${hero}-${pose}.svg`,
-    banner: `mods/fellowship/banners/${hero}-${pose}.png`,
+    icon: `mods/fellowship/sprites/${sprite}.svg`,
+    banner: `mods/fellowship/banners/${sprite}.png`,
   };
 }
 

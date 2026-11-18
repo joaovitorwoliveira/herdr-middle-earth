@@ -5,3 +5,7 @@ export function pickHero(pool, heroes, random = Math.random) {
   const choices = pool.filter((hero) => uses(hero) === fewest);
   return choices[Math.floor(random() * choices.length)];
 }
+
+export const RARE_CHANCE = 0.03;
+
+export const rollRare = (random = Math.random) => random() < RARE_CHANCE;
