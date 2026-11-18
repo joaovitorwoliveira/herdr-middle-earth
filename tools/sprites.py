@@ -567,9 +567,274 @@ def sauron_frames():
     return pal, {"sauron": base, "sauron-work": up, "sauron-2": strike, "sauron-idle": dim, "sauron-idle-2": base}
 
 
+# Rare editions: the same hero in a special outfit, cast now and then instead of the usual one.
+RARE_POSES = ("", "-work", "-2", "-idle", "-idle-2")
+BLANK = "........" * 3
+
+
+def restyle(pose, base, rows):
+    """Redraws what a pose changes on its base pose onto other rows, so a new outfit keeps the same action."""
+    return put(rows, [(x, y, c if c != "." else ",") for y, (pose_row, base_row) in enumerate(zip(pose, base))
+                      for x, (c, b) in enumerate(zip(pose_row, base_row)) if c != b])
+
+
+GANDALF_WHITE = [BLANK] * 3 + [
+    "........" "oooooooo" "........",
+    ".......o" "WWWWWWWW" "o.......",
+    "......oW" "WWwWWwWW" "Wo......",
+    "......oW" "WWWWWWWW" "Wo......",
+    "......oW" "wssssssw" "Wo......",
+    "......oW" "ssssssss" "Wo......",
+] + GANDALF[9:]
+GANDALF_WHITE_PAL = {"G": "#d6d9e2", "g": "#a3a9b8", "W": "#ffffff", "w": "#c8ccd6", "T": "#eeeef2", "X": "#ffffff",
+                     "x": "#fff6d0", "b": "#ffffff", "B": "#c8d2e4"}
+
+
+def gandalf_rare_frames():
+    palette, poses = gandalf_frames()
+    white = under(GANDALF_STAFF, GANDALF_WHITE)
+    return {**palette, **GANDALF_WHITE_PAL}, {
+        f"gandalf-rare{pose}": restyle(poses[f"gandalf{pose}"], poses["gandalf"], white) for pose in RARE_POSES}
+
+
+ELESSAR = [BLANK] + [
+    "........" "Q..QQ..Q" "........",
+    ".......o" "QqQJJQqQ" "o.......",
+] + ARAGORN[3:]
+WHITE_TREE = [(9, 14, "W"), (11, 14, "W"), (12, 14, "W"), (14, 14, "W"), (10, 15, "W"), (11, 15, "W"), (12, 15, "W"),
+              (13, 15, "W"), (11, 16, "W"), (12, 16, "W")]
+ELESSAR_PAL = {"C": "#3a3a46", "c": "#26262e", "L": "#18181e", "l": "#2a2a34", "P": "#2e2e36", "W": "#f2f2f2",
+               "Q": "#e2e6ee", "q": "#9aa0ac", "J": "#ffffff", "*": "#bfe4ff", "x": "#5ab0ff", "v": "#5ab0ff",
+               "+": "#ffffff"}
+
+
+def aragorn_rare_frames():
+    palette, poses = aragorn_frames()
+    base = scabbard(put(ELESSAR, WHITE_TREE), drawn=False)
+    up = restyle(poses["aragorn-work"], poses["aragorn"], base)
+    strike = restyle(poses["aragorn-2"], poses["aragorn"], base)
+    strike = put(strike, [(18, 11, "v"), (20, 11, "v"), (22, 11, "v"), (19, 15, "v"), (21, 15, "v"), (23, 15, "v")])
+    leaning = stamp(asleep(base, [8, 9]), 16, 19, ["oCCo"])
+    leaning = stamp(leaning, 19, 11, [
+        "..o..",
+        ".ogo.",
+        "ooGo.",
+        "Csso.",
+        "ogggo",
+    ] + [".oXo."] * 7 + ["..o.."])
+    return {**palette, **ELESSAR_PAL}, {
+        "aragorn-rare": base, "aragorn-rare-work": up, "aragorn-rare-2": strike,
+        "aragorn-rare-idle": leaning, "aragorn-rare-idle-2": put(leaning, [(8, 1, "+"), (9, 0, "+"), (15, 3, "+")]),
+    }
+
+
+FRODO_HOOD = [
+    BLANK,
+    "........" "oooooooo" "........",
+    ".......o" "CCCCCCCC" "o.......",
+    "......oC" "CCGCCGCC" "Co......",
+    ".....oCC" "cccccccc" "CCo.....",
+    ".....oCc" "hhHhhHhh" "cCo.....",
+    ".....oCc" "shhsshhs" "cCo.....",
+    ".....oCc" "ssssssss" "cCo.....",
+    ".....oCc" "skssssks" "cCo.....",
+    ".....oCc" "skssssks" "cCo.....",
+    ".....oCc" "ssssssss" "cCo.....",
+    ".....oCo" "sssmmsss" "oCo.....",
+    ".....oCC" "osssssso" "CCo.....",
+] + FRODO[13:]
+LORIEN_BROOCH = [(9, 13, "f"), (9, 14, "f")]
+FRODO_ELVEN_PAL = {"C": "#7d8a74", "c": "#566350", "G": "#9aa890", "f": "#8fd85a", "q": "#b8e0ff"}
+
+
+def frodo_rare_frames():
+    palette, poses = frodo_frames()
+    base = put(FRODO_HOOD, LORIEN_BROOCH)
+    up = restyle(poses["frodo-work"], shift_left(poses["frodo"], 2), shift_left(base, 2))
+    strike = restyle(poses["frodo-2"], shift_left(poses["frodo"], 2), shift_left(base, 2))
+    phial = stamp(stamp(base, 4, 19, ["oCCo"]), 5, 13, [
+        "..o..",
+        ".oXo.",
+        "oXxXo",
+        "oxXxo",
+        "osSso",
+        ".ooo.",
+    ])
+    shining = put(phial, [(7, 15, "X"), (7, 11, "q"), (4, 14, "q"), (10, 14, "q"), (4, 17, "b"), (10, 17, "b"),
+                          (5, 12, "b"), (9, 12, "b")])
+    return {**palette, **FRODO_ELVEN_PAL}, {
+        "frodo-rare": base, "frodo-rare-work": up, "frodo-rare-2": strike,
+        "frodo-rare-idle": phial, "frodo-rare-idle-2": shining,
+    }
+
+
+SAM_STRAW_HAT = [
+    BLANK,
+    "........" ".oooooo." "........",
+    "........" "oYYYYYYo" "........",
+    ".......o" "YYyYYyYY" "o.......",
+    ".......o" "gggggggg" "o.......",
+    "....oYYY" "YYYYYYYY" "YYYo....",
+    "....oooh" "shhsshhs" "hooo....",
+] + SAM[7:]
+GALADRIEL_BOX = ["ooooo", "oKjKo", "ooooo"]
+SPADE = [".ooo.", "obbbo", ".obo."] + [".obo."] * 8 + ["owwwo", "owwwo", "owwwo", ".owo.", "..o.."]
+# The hand grips the spade or the can: the column under it stays open so the handle shows through.
+SAM_ARM_OUT = ["..ooos..", "LLLLLso.", "LLLoo..."]
+WATERING_CAN_RAISED = [
+    "...ooo..",
+    "..oNNNo.",
+    ".osNwNNo",
+    ".oLNNNoN",
+    ".oLoooo.",
+    ".oLLo...",
+    "oLLo....",
+    "oLLo....",
+    "oLLo....",
+]
+MALLORN_SAPLING = [
+    "..Y.",
+    ".GYG",
+    "GYGY",
+    ".GtG",
+    "..t.",
+    "..t.",
+    ".555",
+]
+SAM_GARDENER_PAL = {"Y": "#e8c870", "y": "#c09a48", "g": "#5a7a3a", "K": "#8a8478", "j": "#eef2f8", "N": "#7e8c96",
+                    "G": "#6fa84a", "t": "#d8dce4", "q": "#7ec8ff"}
+
+
+def sam_rare_frames():
+    palette, _ = sam_frames()
+    base = stamp(SAM_STRAW_HAT, 2, 20, GALADRIEL_BOX)
+    body = stamp(base, 16, 19, ["o,,,", ".,,."])
+    body = put(body, [(19, 18, ".")])
+    lift = stamp(stamp(body, 19, 4, SPADE), 16, 13, SAM_ARM_OUT)
+    dig = stamp(stamp(body, 19, 8, SPADE), 16, 13, SAM_ARM_OUT)
+    dig = put(dig, [(18, 23, "5"), (19, 22, "5"), (23, 22, "5"), (17, 20, "6"), (23, 18, "6"), (22, 16, "6")])
+    watering = stamp(stamp(asleep(body, [8, 9]), 20, 17, MALLORN_SAPLING), 16, 5, WATERING_CAN_RAISED)
+    return {**palette, **SAM_GARDENER_PAL}, {
+        "sam-rare": base, "sam-rare-work": lift, "sam-rare-2": dig,
+        "sam-rare-idle": put(watering, [(23, 10, "q"), (23, 13, "q")]),
+        "sam-rare-idle-2": put(watering, [(23, 11, "q"), (23, 15, "q")]),
+    }
+
+
+PRINCE_LEGOLAS = LEGOLAS[:5] + ["......oQ" "QQQJJQQQ" "Qo......"] + LEGOLAS[6:]
+PRINCE_PAL = {"E": "#aab4c4", "e": "#76819a", "D": "#3c4250", "n": "#4e5668", "Q": "#e6eaf2", "J": "#9fd8ff",
+              "K": "#ffffff", "v": "#dff4ff"}
+
+
+def legolas_rare_frames():
+    palette, _ = legolas_frames()
+    ready = put(PRINCE_LEGOLAS, [(4, 19, "n"), (3, 18, "K"), (2, 17, "K"), (1, 16, "K"), (0, 15, "K"),
+                                 (19, 19, "n"), (20, 18, "K"), (21, 17, "K"), (22, 16, "K"), (23, 15, "K")])
+    cross = put(PRINCE_LEGOLAS, [(7, 19, "n"), (8, 18, "K"), (9, 17, "K"), (10, 16, "K"), (11, 15, "K"), (12, 14, "K"),
+                                 (16, 19, "n"), (15, 18, "K"), (14, 17, "K"), (13, 16, "K"), (12, 15, "K"), (11, 14, "K"),
+                                 (1, 13, "v"), (2, 11, "v"), (22, 13, "v"), (21, 11, "v"), (0, 16, "v"), (23, 16, "v")])
+    still = stamp(bow(PRINCE_LEGOLAS, "rest"), 4, 19, ["oEEo"])
+
+    def arrow(x, y):
+        hand = [(x + 4, y + 1, "o"), (x + 5, y + 1, "s"), (x + 6, y + 1, "s"), (x + 7, y + 1, "o"), (x + 5, y + 2, "o"),
+                (x + 6, y + 2, "o")]
+        return put(still, [(x, y, "f"), (x + 1, y, "f")] + [(x + i, y, "a") for i in range(2, 10)] + [(x + 10, y, "A")]
+                   + hand)
+
+    return {**palette, **PRINCE_PAL}, {
+        "legolas-rare": bow(PRINCE_LEGOLAS, "rest"), "legolas-rare-work": ready, "legolas-rare-2": cross,
+        "legolas-rare-idle": arrow(2, 15), "legolas-rare-idle-2": arrow(3, 14),
+    }
+
+
+GIMLI_HELM = [BLANK] * 2 + [
+    "........" "...oo..." "........",
+    "........" "ooomMooo" "........",
+    ".......o" "MwwMMMMM" "o.......",
+    "......oM" "wMMMMMMM" "Mo......",
+    "......oM" "MMMyyMMM" "Mo......",
+    ".....omm" "mmmmmmmm" "mmo.....",
+    ".....oMm" "RRsMMsRR" "mMo.....",
+    ".....oMm" "sksMMsks" "mMo.....",
+    ".....oMm" "RssSSssR" "mMo.....",
+] + GIMLI[11:]
+CHAINMAIL_PAL = {"D": "#8a8e98", "d": "#5c606a"}
+THROWN_AXE = [
+    ".....oo.",
+    "....oAAo",
+    "....oAwo",
+    "oTTTTTTo",
+    "....oAAo",
+    "....oAAo",
+    ".....oo.",
+]
+AXE_ACROSS = [
+    "...............oo",
+    "..............oAA",
+    "..............oAw",
+    "TTTTTTTTTTTT...TT",
+    "..............oAA",
+    "..............oAA",
+    "...............oo",
+]
+
+
+def gimli_rare_frames():
+    palette, poses = gimli_frames()
+    base = gimli_axe_low(GIMLI_HELM)
+    windup = restyle(poses["gimli-work"], poses["gimli"], base)
+    thrown = stamp(GIMLI_HELM, 16, 0, THROWN_AXE)
+    thrown = put(thrown, [(10, 1, "w"), (12, 1, "w"), (14, 1, "w"), (17, 6, "w"), (19, 7, "w"), (21, 8, "w")])
+    tally = stamp(asleep(GIMLI_HELM, [9]), 6, 14, AXE_ACROSS)
+    marks = [(8, 17, "w"), (10, 17, "w"), (12, 17, "w")]
+    return {**palette, **CHAINMAIL_PAL}, {
+        "gimli-rare": base, "gimli-rare-work": windup, "gimli-rare-2": thrown,
+        "gimli-rare-idle": put(tally, marks), "gimli-rare-idle-2": put(tally, marks + [(14, 17, "w"), (14, 16, "*")]),
+    }
+
+
+ANNATAR = LEGOLAS[:13] + [
+    "....oYYw" "IIIIIIII" "wYYo....",
+] + [row.replace("W", "I").replace("w", "y") for row in GANDALF[14:]]
+ANNATAR_PAL = {**SKIN, "Y": "#f5d36a", "G": "#c8901e", "g": "#9a6a14", "I": "#fff0c0", "w": "#d8a838", "y": "#e8b840",
+               "k": "#6b4a2a", "H": "#d0d4dc", "N": "#8a8f9c", "n": "#4a4e58", "T": "#7a5230", "*": "#fff4b0",
+               "f": "#ff9a2a", "r": "#ffd84a"}
+ANVIL = [".ooooo", "oNNNNo", ".onno.", "onnnno"]
+HAMMER_RAISED = [
+    ".ooooo",
+    ".oHHHo",
+    ".ooooo",
+    "..oTo.",
+    "..oTo.",
+    "..oso.",
+    "..oGo.",
+    ".oGGo.",
+    ".oGo..",
+    "oGGo..",
+    "GGo...",
+]
+
+
+def sauron_rare_frames():
+    forge = put(stamp(ANNATAR, 18, 20, ANVIL), [(20, 20, "r"), (21, 20, "r")])
+    windup = stamp(stamp(forge, 17, 18, ["GgGo"]), 18, 3, HAMMER_RAISED)
+    strike = put(forge, [(20, 18, "T"), (21, 16, "o"), (22, 16, "o"), (21, 17, "H"), (22, 17, "H"), (23, 17, "o"),
+                         (21, 18, "H"), (22, 18, "H"), (23, 18, "o"), (21, 19, "H"), (22, 19, "H"), (23, 19, "o"),
+                         (20, 19, "r"), (20, 16, "*"), (22, 15, "*"), (23, 14, "f"), (19, 15, "f"), (23, 21, "f")])
+    admiring = stamp(ANNATAR, 3, 18, ["oGgG"])
+    admiring = put(admiring, ring(2, 10, "r") + [(1, 14, "o"), (2, 14, "s"), (3, 14, "s"), (2, 15, "o"), (3, 15, "o")])
+    return ANNATAR_PAL, {
+        "sauron-rare": ANNATAR, "sauron-rare-work": windup, "sauron-rare-2": strike,
+        "sauron-rare-idle": admiring, "sauron-rare-idle-2": put(admiring, [(4, 9, "*"), (2, 11, "*"), (0, 9, "*")]),
+    }
+
+
 CAST = ["gandalf", "aragorn", "frodo", "sam", "legolas", "gimli", "sauron"]
-FRAMES = (gandalf_frames, aragorn_frames, frodo_frames, sam_frames, legolas_frames, gimli_frames, sauron_frames)
-POSES = dict(zip(CAST, (frames() for frames in FRAMES)))
+RARE_CAST = [f"{name}-rare" for name in CAST]
+FRAMES = (gandalf_frames, aragorn_frames, frodo_frames, sam_frames, legolas_frames, gimli_frames, sauron_frames,
+          gandalf_rare_frames, aragorn_rare_frames, frodo_rare_frames, sam_rare_frames, legolas_rare_frames,
+          gimli_rare_frames, sauron_rare_frames)
+POSES = dict(zip(CAST + RARE_CAST, (frames() for frames in FRAMES)))
 # Base pose with the character's full palette, every pose's colors included.
 SPRITES = {name: (poses[name], palette) for name, (palette, poses) in POSES.items()}
 
@@ -589,7 +854,7 @@ def all_sprites():
     for palette, poses in POSES.values():
         for key, rows in poses.items():
             table[key] = (rows, palette)
-    for name in CAST:
+    for name in CAST + RARE_CAST:
         for badge in BADGES:
             table[f"{name}-{badge}"] = badged(name, badge)
     return table

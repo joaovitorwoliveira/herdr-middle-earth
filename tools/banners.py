@@ -18,7 +18,7 @@ def png(rows, palette, path):
 
 
 os.makedirs(OUT, exist_ok=True)
-for name in CAST:
+for name in CAST + pixels.RARE_CAST:
     for pose in ("blocked", "done"):
         png(*pixels.badged(name, pose), os.path.join(OUT, f"{name}-{pose}.png"))
 print(len(os.listdir(OUT)), "banners")
