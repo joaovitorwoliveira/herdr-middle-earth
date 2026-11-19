@@ -34,15 +34,15 @@ test("fills a gap left by a closed agent before repeating", () => {
 // Each draw takes the next number in turn, so a test can script both rolls.
 const rolls = (...values) => () => values.shift();
 
-test("a rare edition comes up 3% of the time", () => {
-  assert.equal(drawEdition("frodo", rolls(0.029)), "rare");
-  assert.equal(drawEdition("frodo", rolls(0.03)), null);
+test("a rare edition comes up 10% of the time", () => {
+  assert.equal(drawEdition("frodo", rolls(0.099)), "rare");
+  assert.equal(drawEdition("frodo", rolls(0.1)), null);
   assert.equal(drawEdition("frodo", rolls(0.5)), null);
 });
 
 test("only Gandalf can draw the sax edition, 1% of the time, before the rare roll", () => {
   assert.equal(drawEdition("gandalf", rolls(0.009)), "sax");
-  assert.equal(drawEdition("gandalf", rolls(0.01, 0.029)), "rare");
+  assert.equal(drawEdition("gandalf", rolls(0.01, 0.099)), "rare");
   assert.equal(drawEdition("gandalf", rolls(0.5, 0.5)), null);
   assert.equal(drawEdition("aragorn", rolls(0.009)), "rare");
 });

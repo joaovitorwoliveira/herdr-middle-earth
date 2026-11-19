@@ -40,7 +40,7 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
   <img src="docs/rare.png" alt="Gandalf the White, King Elessar, Frodo Elf-friend, Samwise the Gardener, Prince Legolas, Gimli of Helm's Deep and Annatar as pixel sprites" width="640">
 </p>
 
-Every new agent has a **3% chance** of drawing a hero's rare edition. It keeps it until it closes, with its own name on the card and its own art in every state:
+Every new agent has a **10% chance** of drawing a hero's rare edition. It keeps it until it closes, with its own name on the card and its own art in every state:
 
 - **Gandalf the White:** white robes and a white staff that bursts with light.
 - **King Elessar:** the silver crown and the White Tree, with Andúril glowing blue.

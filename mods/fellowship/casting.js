@@ -6,7 +6,7 @@ export function pickHero(pool, heroes, random = Math.random) {
   return choices[Math.floor(random() * choices.length)];
 }
 
-export const RARE_CHANCE = 0.03;
+export const RARE_CHANCE = 0.1;
 export const SAX_CHANCE = 0.01;
 const SAX_HERO = "gandalf";
 
