@@ -8,7 +8,7 @@ Your agents become the Fellowship: animated pixel sprites that smoke a pipe whil
 
 ## What you see
 
-The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: TeX Gyre Pagella, a free Palatino clone that ships in `mods/fellowship/fonts/`, so it looks the same on every system. Terminal padding: `[14, 12]`. A 1px `border` divider runs between the columns.
+The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: `.SystemUIFont`, the system's own interface font (SF Pro on macOS). Terminal padding: `[14, 12]`. A 1px `border` divider runs between the columns.
 
 - **Sidebar, left, 268px** (min 44, max 480, not resizable), on `chrome`:
   - **Brand**, 46px: the shipped `workspace-chrome`. It is a window drag area.
@@ -93,13 +93,12 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
   - `terminal-notifier` has to be allowed once: open its `.app`.
   - A Focus mode hides banners unless `terminal-notifier` is allowed in it.
 - **Posting from `init()`:** the post happens in `init()`, not in `render()`. `render()` may never run while the window is on another macOS Space.
-- **Pagella** loads from `mods/fellowship/fonts/` (Herdr loads a mod's `fonts/` at start and on the next look change). Its license, GUST, sits beside the files.
 - **Image loading:** images load lazily, so the first frame after a switch can show empty sprite slots.
 
 ## Done when
 
 - `herdr-app check mods/<name>` passes for `fellowship`, `fellowship-toast`, `fellowship-status` and `realms`.
-- `layout.switch {"name":"middle-earth"}` shows the Shire in light mode and Mordor in dark mode, in TeX Gyre Pagella.
+- `layout.switch {"name":"middle-earth"}` shows the Shire in light mode and Mordor in dark mode, in the system font.
 - Starting a Claude Code agent adds a random member (Sauron can be drawn when dark) with a working animation. When the agent waits, it switches to the idle pipe.
 - A second agent gets the next free character, and the characters stay the same after a restart.
 - A finished agent shows its hero's done line with the Ring sprite and plays `done-alert.mp3`.

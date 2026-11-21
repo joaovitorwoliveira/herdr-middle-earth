@@ -32,7 +32,7 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
 - **Notifications:** toasts and macOS banners in character, with the sprite. Each hero has a line of their own ("Gandalf arrives precisely when he means to", "Gimli won't take another step without you").
 - **Dock badge:** the Herdr icon shows how many agents are waiting for you.
 - **Status bar:** counts agents by state ("2 on the road · 1 awaiting counsel").
-- **Also included:** a Claude Code icon holding the Ring, a hobbit-door shell icon, the TeX Gyre Pagella font (a free Palatino clone, bundled), and custom alert sounds.
+- **Also included:** a Claude Code icon holding the Ring, a hobbit-door shell icon, and custom alert sounds.
 
 ## Rare editions
 
@@ -119,4 +119,4 @@ Issues and pull requests are welcome, and reports from Linux and Windows help th
 
 ## License
 
-MIT, except the TeX Gyre Pagella font in `mods/fellowship/fonts/`, which is under the GUST Font License included beside it.
+MIT.

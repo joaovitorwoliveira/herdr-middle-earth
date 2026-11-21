@@ -189,6 +189,6 @@
     "light": "shire",
     "dark": "mordor"
   },
-  "ui_font": "TeX Gyre Pagella",
+  "ui_font": ".SystemUIFont",
   "preview": "layouts/middle-earth.png"
 }
