@@ -27,7 +27,7 @@ keep_aside() {
 }
 
 echo "Installing into $HERDR_HOME"
-mkdir -p "$HERDR_HOME/layouts" "$HERDR_HOME/themes" "$HERDR_HOME/mods"
+mkdir -p "$HERDR_HOME/layouts" "$HERDR_HOME/themes" "$HERDR_HOME/mods" "$HERDR_HOME/backgrounds"
 
 for mod in "${MODS[@]}"; do
   keep_aside "mods/$mod"
@@ -37,6 +37,8 @@ for theme in "${THEMES[@]}"; do
   keep_aside "themes/$theme.json"
   cp "$REPO/themes/$theme.json" "$HERDR_HOME/themes/"
 done
+keep_aside "backgrounds/$LAYOUT"
+cp -R "$REPO/backgrounds/$LAYOUT" "$HERDR_HOME/backgrounds/$LAYOUT"
 for file in "$LAYOUT.json" "$LAYOUT.png"; do
   keep_aside "layouts/$file"
   cp "$REPO/layouts/$file" "$HERDR_HOME/layouts/"

@@ -15,11 +15,15 @@
   <img src="https://img.shields.io/badge/license-MIT-a8875a" alt="MIT license">
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/heroes-7-4e7a32" alt="7 heroes">
+  <img src="https://img.shields.io/badge/realms-7-3d6f7a" alt="7 realms">
+  <img src="https://img.shields.io/badge/rare%20editions-7%20%2B%201-e0662e" alt="7 rare editions, plus 1 ultra rare">
+</p>
+
 Your agents become the Fellowship and your spaces become the realms. Light mode is the Shire and dark mode is Mordor.
 
-![Middle-earth in the Shire](docs/shire.png)
-
-![Middle-earth in Mordor, with Sauron](docs/mordor.png)
+<p align="center"><img src="docs/overview.png" alt="Middle-earth for Herdr in the Shire (light) and Mordor (dark), side by side" width="1000"></p>
 
 - **Agents:** Gandalf, Aragorn, Frodo, Sam, Legolas and Gimli, as animated pixel sprites. Sauron joins in dark mode.
   - **Idle:** they smoke a pipe.
@@ -28,7 +32,7 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
   - **Done:** they bring back the Ring.
 - **Cards:** each agent's card stacks its model, its space in bold, its session name and a bar for how much of its context window is used, so a narrow sidebar still shows everything.
 - **Model and context:** both are read off the agent's screen, so the bar needs a statusline that prints the percentage (see [Model and context](#model-and-context-optional)).
-- **Spaces:** each space gets a realm emblem: Shire, Rivendell, Gondor, Rohan, Lórien, Moria or Mordor.
+- **Spaces:** each space gets a realm (Shire, Rivendell, Gondor, Rohan, Lórien, Moria or Mordor), with its emblem in the sidebar and its landscape behind the terminals: by day in the Shire theme, by night in Mordor.
 - **Notifications:** toasts and macOS banners in character, with the sprite. Each hero has a line of their own ("Gandalf arrives precisely when he means to", "Gimli won't take another step without you").
 - **Dock badge:** the Herdr icon shows how many agents are waiting for you.
 - **Status bar:** counts agents by state ("2 on the road · 1 awaiting counsel").
@@ -109,6 +113,8 @@ The agent sprites are 24x24 grids and the realm emblems 16x16, all in `tools/spr
 python3 tools/sprites.py    # SVG sprites and realm emblems
 python3 tools/banners.py    # PNG banners for notifications (needs Pillow)
 python3 tools/header.py     # the cast strips at the top of this README (needs Pillow)
+python3 tools/backgrounds.py  # the realm backdrops behind the terminals (needs Pillow)
+python3 tools/overview.py   # the Shire and Mordor overview (needs Pillow)
 ```
 
 `RECIPE.md` describes the whole build, for anyone (or any agent) rebuilding it from scratch.

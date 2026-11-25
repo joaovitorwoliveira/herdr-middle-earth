@@ -5,7 +5,7 @@
 
 import { View, div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
-import { spaces, machines, panes, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout } from "herdr";
+import { spaces, machines, panes, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout, checking, settings } from "herdr";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -56,6 +56,14 @@ const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b
 const REALMS = ["shire", "rivendell", "gondor", "rohan", "lorien", "moria", "mordor"];
 const REALMS_KEY = "realms.emblems";
 const EMBLEM_SIZE = 20;
+const LAYOUT = "middle-earth";
+
+// The active space's realm, behind the terminals, in the Shire or Mordor version.
+function backdrop() {
+  const sp = spaces();
+  const realm = realmsFor(sp)[sp.find((s) => s.active)?.id];
+  return realm ? { image: `backgrounds/middle-earth/${settings().dark ? "dark" : "light"}/${realm}.png`, fit: "cover" } : null;
+}
 
 // Each space keeps the realm it got first; a new one takes the first realm no space has.
 function realmsFor(list) {
@@ -314,6 +322,30 @@ export default class Spaces extends View {
     openOverlay({ mod: "menu", kind: "popup", width: 200, height: 260, props: { tab: "space", target: { id: w.id } } });
   }
 
+  syncBackdrop(cx) {
+    if (checking() || shared("layout") !== LAYOUT || this.backdropPending) return;
+    const want = backdrop();
+    const shown = layout()?.background?.image;
+    // No image yet: a layout from before the backdrops (or mid-install) must not be written back.
+    if (!want || typeof shown !== "string" || shown === want.image) return;
+    this.backdropPending = true;
+    // layout.set redraws every mod, so it waits for this render to end, then
+    // reads again: a quick space switch must not apply a stale layout.
+    cx.spawn(async (task) => {
+      try {
+        await task.sleep(0);
+        const next = backdrop();
+        const current = layout();
+        const image = current?.background?.image;
+        if (shared("layout") === LAYOUT && next && typeof image === "string" && image !== next.image) {
+          run("layout.set", { layout: { ...current, background: next } });
+        }
+      } finally {
+        this.backdropPending = false;
+      }
+    });
+  }
+
   orderingDue(now) {
     return this.ordering && now - this.ordering.at >= 1000
       && this.ordering.machines.every(name => machines().some(m => m.name === name && m.layout === "ready"));
@@ -540,9 +572,10 @@ export default class Spaces extends View {
       .child(div().absolute().right(5).text_color(tone(t, w.status)).child(glyph(w.status))));
   }
 
-  render() {
+  render(cx) {
     const t = theme();
     const collapsed = narrow();
+    this.syncBackdrop(cx);
     const palette = ["ansi6", "ansi3", "ansi4", "ansi5", "ansi2", "ansi1"];
     const sp = spaces();
     const ids = new Set(sp.map(p => p.id));
