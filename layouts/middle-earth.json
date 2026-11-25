@@ -171,7 +171,7 @@
     }
   ],
   "background": {
-    "image": "backgrounds/middle-earth/light/shire.png",
+    "image": "backgrounds/middle-earth/light.png",
     "fit": "cover"
   },
   "terminal_opacity": 0.6,

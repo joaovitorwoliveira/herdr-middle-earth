@@ -58,11 +58,9 @@ const REALMS_KEY = "realms.emblems";
 const EMBLEM_SIZE = 20;
 const LAYOUT = "middle-earth";
 
-// The active space's realm, behind the terminals, in the Shire or Mordor version.
+// The halftone behind the terminals, in the Shire or Mordor version.
 function backdrop() {
-  const sp = spaces();
-  const realm = realmsFor(sp)[sp.find((s) => s.active)?.id];
-  return realm ? { image: `backgrounds/middle-earth/${settings().dark ? "dark" : "light"}/${realm}.png`, fit: "cover" } : null;
+  return { image: `backgrounds/middle-earth/${settings().dark ? "dark" : "light"}.png`, fit: "cover" };
 }
 
 // Each space keeps the realm it got first; a new one takes the first realm no space has.
@@ -327,7 +325,7 @@ export default class Spaces extends View {
     const want = backdrop();
     const shown = layout()?.background?.image;
     // No image yet: a layout from before the backdrops (or mid-install) must not be written back.
-    if (!want || typeof shown !== "string" || shown === want.image) return;
+    if (typeof shown !== "string" || shown === want.image) return;
     this.backdropPending = true;
     // layout.set redraws every mod, so it waits for this render to end, then
     // reads again: a quick space switch must not apply a stale layout.
@@ -337,7 +335,7 @@ export default class Spaces extends View {
         const next = backdrop();
         const current = layout();
         const image = current?.background?.image;
-        if (shared("layout") === LAYOUT && next && typeof image === "string" && image !== next.image) {
+        if (shared("layout") === LAYOUT && typeof image === "string" && image !== next.image) {
           run("layout.set", { layout: { ...current, background: next } });
         }
       } finally {

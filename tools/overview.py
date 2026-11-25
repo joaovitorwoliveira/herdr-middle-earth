@@ -5,13 +5,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 # The README's overview: the Shire and Mordor screenshots side by side in one dark frame, so the
 # cards stay readable at README width. Takes the two shots as arguments, else docs/shire.png and docs/mordor.png.
-# Both shots must have the same height; each is cropped to its left part: the whole sidebar and the left of the terminal.
+# Both shots must have the same height; each is cropped to its left part, CROP_WIDTH_PER_HEIGHT times its height wide.
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 DOCS = os.path.join(ROOT, "docs")
 FONT = "/System/Library/Fonts/SFNS.ttf"
 WIDTH = 2000
 # The crop's width as a share of the shot's height, so it holds for the full-size and the docs shots alike.
-CROP_WIDTH_PER_HEIGHT = 0.8
+CROP_WIDTH_PER_HEIGHT = 0.92
 PAD = 64
 GAP = 36
 FRAME_RADIUS = 40

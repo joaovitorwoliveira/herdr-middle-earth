@@ -1,20 +1,19 @@
 // Run with: node --test tests/themes.test.js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 
 const ROOT = new URL("../", import.meta.url);
 const json = (path) => JSON.parse(readFileSync(new URL(path, ROOT), "utf8"));
 const THEMES = { light: json("themes/shire.json"), dark: json("themes/mordor.json") };
 const LAYOUT = json("layouts/middle-earth.json");
-const REALMS = readdirSync(new URL("mods/realms/emblems/", ROOT)).map((f) => f.replace(/\.svg$/, "")).sort();
 const SURFACES = ["chrome", "canvas", "popover", "selected"];
 const TEXT = 4.5; // WCAG AA, body text
 const SECONDARY = 3; // WCAG AA, large text and non-text UI: dim labels, accents
-// A backdrop's brightest specks (a star, a lantern) may pass under a word; the scene itself may not.
+// The backdrop's brightest dots may pass under a word; the glow itself may not.
 const SPECKS = 0.01;
-const BACKDROP_SIZE = [640, 360];
+const BACKDROP_SIZE = [2400, 1400];
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
@@ -28,7 +27,7 @@ function contrast(a, b) {
   return (high + 0.05) / (low + 0.05);
 }
 
-// The pixels of an 8-bit RGB PNG, as tools/backgrounds.py writes them.
+// The pixels of an 8-bit RGB PNG, as tools/halftone.py writes them.
 function pixels(path) {
   const png = readFileSync(new URL(path, ROOT));
   const [width, height, depth, type] = [png.readUInt32BE(16), png.readUInt32BE(20), png[24], png[25]];
@@ -72,22 +71,20 @@ for (const [appearance, t] of Object.entries(THEMES)) {
     }
   });
 
-  test(`${appearance}: terminal text reads over every realm's backdrop`, () => {
+  test(`${appearance}: terminal text reads over the backdrop`, () => {
     const opacity = LAYOUT.terminal_opacity;
     const bg = rgb(t.background);
     const fg = rgb(t.foreground);
-    for (const realm of REALMS) {
-      const path = `backgrounds/middle-earth/${appearance}/${realm}.png`;
-      const { width, height, list } = pixels(path);
-      assert.deepEqual([width, height], BACKDROP_SIZE, path);
-      const seen = new Map();
-      const ratios = list.map((px) => {
-        const key = px.join();
-        if (!seen.has(key)) seen.set(key, contrast(fg, bg.map((c, i) => opacity * c + (1 - opacity) * px[i])));
-        return seen.get(key);
-      }).sort((a, b) => a - b);
-      const ratio = ratios[Math.floor(ratios.length * SPECKS)];
-      assert.ok(ratio >= TEXT, `${path}: ${ratio.toFixed(2)}:1`);
-    }
+    const path = `backgrounds/middle-earth/${appearance}.png`;
+    const { width, height, list } = pixels(path);
+    assert.deepEqual([width, height], BACKDROP_SIZE, path);
+    const seen = new Map();
+    const ratios = list.map((px) => {
+      const key = px.join();
+      if (!seen.has(key)) seen.set(key, contrast(fg, bg.map((c, i) => opacity * c + (1 - opacity) * px[i])));
+      return seen.get(key);
+    }).sort((a, b) => a - b);
+    const ratio = ratios[Math.floor(ratios.length * SPECKS)];
+    assert.ok(ratio >= TEXT, `${path}: ${ratio.toFixed(2)}:1`);
   });
 }

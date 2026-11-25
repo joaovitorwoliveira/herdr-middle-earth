@@ -32,7 +32,8 @@ Your agents become the Fellowship and your spaces become the realms. Light mode 
   - **Done:** they bring back the Ring.
 - **Cards:** each agent's card stacks its model, its space in bold, its session name and a bar for how much of its context window is used, so a narrow sidebar still shows everything.
 - **Model and context:** both are read off the agent's screen, so the bar needs a statusline that prints the percentage (see [Model and context](#model-and-context-optional)).
-- **Spaces:** each space gets a realm (Shire, Rivendell, Gondor, Rohan, Lórien, Moria or Mordor), with its emblem in the sidebar and its landscape behind the terminals: by day in the Shire theme, by night in Mordor.
+- **Spaces:** each space gets a realm (Shire, Rivendell, Gondor, Rohan, Lórien, Moria or Mordor), with its emblem in the sidebar.
+- **Backdrop:** a halftone glow behind the terminals, a field of gold and green in the Shire and an ember in Mordor.
 - **Notifications:** toasts and macOS banners in character, with the sprite. Each hero has a line of their own ("Gandalf arrives precisely when he means to", "Gimli won't take another step without you").
 - **Dock badge:** the Herdr icon shows how many agents are waiting for you.
 - **Status bar:** counts agents by state ("2 on the road · 1 awaiting counsel").
@@ -113,7 +114,7 @@ The agent sprites are 24x24 grids and the realm emblems 16x16, all in `tools/spr
 python3 tools/sprites.py    # SVG sprites and realm emblems
 python3 tools/banners.py    # PNG banners for notifications (needs Pillow)
 python3 tools/header.py     # the cast strips at the top of this README (needs Pillow)
-python3 tools/backgrounds.py  # the realm backdrops behind the terminals (needs Pillow)
+python3 tools/halftone.py   # the halftone backdrop behind the terminals (needs Pillow)
 python3 tools/overview.py   # the Shire and Mordor overview (needs Pillow)
 ```
 
@@ -122,6 +123,10 @@ python3 tools/overview.py   # the Shire and Mordor overview (needs Pillow)
 ## Contributing
 
 Issues and pull requests are welcome, and reports from Linux and Windows help the most. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to test a change.
+
+## Credits
+
+The halftone backdrop is inspired by [herdr-factory](https://github.com/realtonypark/herdr-factory) by realtonypark.
 
 ## License
 

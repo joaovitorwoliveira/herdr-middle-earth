@@ -8,7 +8,7 @@ Your agents become the Fellowship: animated pixel sprites that smoke a pipe whil
 
 ## What you see
 
-The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: `.SystemUIFont`, the system's own interface font (SF Pro on macOS). Terminal padding: `[14, 12]`. The root's background is the active realm's backdrop, a 640x360 pixel-art PNG with `"fit": "cover"`. Pane cards are transparent (`#00000000`) and `terminal_opacity` is 0.6, so the landscape shows through the terminals. A 1px `border` divider runs between the columns.
+The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: `.SystemUIFont`, the system's own interface font (SF Pro on macOS). Terminal padding: `[14, 12]`. The root's background is the theme's halftone backdrop, a 2400x1400 PNG with `"fit": "cover"`: a 12px grid of round dots whose size and color follow a light field rising from the bottom-right corner, an ember over `#0f0b09` in Mordor and gold turning to green over `#f4ecd8` in the Shire. Pane cards are transparent (`#00000000`) and `terminal_opacity` is 0.6, so the glow shows through the terminals. A 1px `border` divider runs between the columns.
 
 - **Sidebar, left, 268px** (min 44, max 480, not resizable), on `chrome`:
   - **Brand**, 46px: the shipped `workspace-chrome`. It is a window drag area.
@@ -69,12 +69,12 @@ Program icons: Claude Code keeps its orange creature, now holding a gold ring. T
 - **`fellowship-toast`:** a clone of `toast`.
   - `heroOf()` matches the title against `/^(.+) (finished|needs you)$/`. It reads the terminal from `action.args.terminal` when the action is `agent.focus`, then looks up `fellowship.cast` and `fellowship.rare`.
   - `init()` posts to the system by `window().platform`. On macOS it uses `exec("terminal-notifier", [...])` with `-activate dev.herdr.app -contentImage <appHome>/<png>`, falling back to `osascript` if that fails. On Linux it uses `exec("notify-send", ["-a", "Herdr", "-i", <png>, title, body])`. It skips this when `window().active` or during `checking()`.
-- **`realms`:** a clone of `spaces`. It keeps each space's realm in shared `realms.emblems` and draws `emblems/<realm>.svg`. When the active space or the appearance changes, it sets the layout's background to `backgrounds/middle-earth/<light|dark>/<realm>.png` with `layout.set`, after the render, and only while the layout already shows an image.
+- **`realms`:** a clone of `spaces`. It keeps each space's realm in shared `realms.emblems` and draws `emblems/<realm>.svg`. When the appearance changes, it sets the layout's background to `backgrounds/middle-earth/<light|dark>.png` with `layout.set`, after the render, and only while the layout already shows an image.
 - **Outside the layout:**
   - `programs.json` sets the `claude` and `shell` icons.
   - `settings.json` sets `sounds.done` and `sounds.blocked`, relative to the home.
   - `install.sh` merges both files.
-- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs. `tools/header.py` draws the README's cast strips, `docs/header.png`, `docs/rare.png` and `docs/sax.png`. `tools/backgrounds.py` (Pillow) draws each realm's backdrop at 320x180 in the theme's colors and scales it 2x. `tests/themes.test.js` checks that text keeps 4.5:1 on every panel and over 99% of every backdrop at the layout's `terminal_opacity`. The SVGs declare width and height 36 over a 24x24 viewBox: Herdr rasterizes an SVG at its declared size, and a 24px raster stretched to 36 picks up faint lines at its edges.
+- **Art:** `tools/sprites.py` writes every SVG from character grids (24x24 agents, 16x16 realm emblems), with `shape-rendering="crispEdges"`. `tools/banners.py` (Pillow) scales the blocked and done poses 8x with nearest-neighbor into PNGs. `tools/header.py` draws the README's cast strips, `docs/header.png`, `docs/rare.png` and `docs/sax.png`. `tools/halftone.py` (Pillow) draws the two halftone backdrops. `tests/themes.test.js` checks that text keeps 4.5:1 on every panel and over 99% of each backdrop at the layout's `terminal_opacity`. The SVGs declare width and height 36 over a 24x24 viewBox: Herdr rasterizes an SVG at its declared size, and a 24px raster stretched to 36 picks up faint lines at its edges.
 
 ## Watch out
 
