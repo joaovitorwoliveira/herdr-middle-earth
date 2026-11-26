@@ -8,7 +8,7 @@ Your agents become the Fellowship: animated pixel sprites that smoke a pipe whil
 
 ## What you see
 
-The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: `.SystemUIFont`, the system's own interface font (SF Pro on macOS). Terminal padding: `[14, 12]`. The root's background is the theme's halftone backdrop, a 2400x1400 PNG with `"fit": "cover"`: a 12px grid of round dots whose size and color follow a light field rising from the bottom-right corner, an ember over `#0f0b09` in Mordor and gold turning to green over `#f4ecd8` in the Shire. Pane cards are transparent (`#00000000`) and `terminal_opacity` is 0.6, so the glow shows through the terminals. A 1px `border` divider runs between the columns.
+The window is a row with no system title bar (`"titlebar": "none"`). The macOS window buttons sit at `[12, 16]`. Ui font: `.SystemUIFont`, the system's own interface font (SF Pro on macOS). Terminal padding: `[14, 12]`. The root's background is the theme's halftone backdrop, a 2400x1400 PNG with `"fit": "cover"`: a 12px grid of round dots whose size and color follow a light field rising from the bottom-right corner, an ember over `#0f0b09` in Mordor and gold turning to green over `#f4ecd8` in the Shire. Pane cards are transparent (`#00000000`) and `terminal_opacity` is 0.5, so the glow shows through the terminals. A 1px `border` divider runs between the columns.
 
 - **Sidebar, left, 268px** (min 44, max 480, not resizable), on `chrome`:
   - **Brand**, 46px: the shipped `workspace-chrome`. It is a window drag area.
