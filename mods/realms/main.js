@@ -554,7 +554,8 @@ export default class Spaces extends View {
       );
   }
 
-  compact({ w, i }, t) {
+  compact({ w, i, tree }, t) {
+    const realm = tree ? null : realmsFor(spaces())[w.id];
     return railCell(h_flex()
       .id(`space-${w.id}`)
       .relative()
@@ -565,9 +566,12 @@ export default class Spaces extends View {
       .items_center()
       .when(w.active, (el) => el.bg(t.selected))
       .when(!w.active, (el) => el.hover((s) => s.bg(t.hover)))
+      .tooltip(w.name)
       .on_click(() => run("space.select", { id: w.id }))
-      .child(div().text_color(w.active ? t.foreground : t.muted).child(String(i + 1)))
-      .child(div().absolute().right(5).text_color(tone(t, w.status)).child(glyph(w.status))));
+      .when(Boolean(realm), (el) => el.child(image(`mods/realms/emblems/${realm}.svg`).w(EMBLEM_SIZE).h(EMBLEM_SIZE).flex_none()))
+      .when(!realm, (el) => el.child(div().text_color(w.active ? t.foreground : t.muted).child(String(i + 1))))
+      // Beside the emblem, not on it: the cell is narrower than emblem plus glyph.
+      .child(div().absolute().right(realm ? -6 : 5).text_color(tone(t, w.status)).child(glyph(w.status))));
   }
 
   render(cx) {

@@ -98,6 +98,7 @@ const RARE_NAMES = {
 };
 const EDITION_NAMES = { rare: RARE_NAMES, sax: { gandalf: "Epic Sax Gandalf" } };
 const SPRITE_SIZE = 36;
+const RAIL_SPRITE_SIZE = 28;
 const MOOD = { working: "On the road", idle: "Resting", done: "Returned", blocked: "Awaits counsel" };
 const MINUTE = 60000;
 // Longest first: the first stage the agent has worked past names its mood.
@@ -122,18 +123,18 @@ const SWAP_HIGH = 7;
 // Resting is slower than battle: a pipe puff, a lembas bite, the Eye smouldering.
 const IDLE_PERIOD = 1800;
 
-function twoFrames(still, second, period) {
-  return div().relative().w(SPRITE_SIZE).h(SPRITE_SIZE).flex_none()
+function twoFrames(still, second, period, size) {
+  return div().relative().w(size).h(size).flex_none()
     .child(still.loop("opacity", { from: SWAP_HIGH, to: SWAP_LOW, period, easing: "linear" }))
-    .child(image(`mods/fellowship/sprites/${second}.svg`).absolute().top(0).left(0).w(SPRITE_SIZE).h(SPRITE_SIZE)
+    .child(image(`mods/fellowship/sprites/${second}.svg`).absolute().top(0).left(0).w(size).h(size)
       .loop("opacity", { from: SWAP_LOW, to: SWAP_HIGH, period, easing: "linear" }));
 }
 
-function heroSprite(hero, status) {
+function heroSprite(hero, status, size = SPRITE_SIZE) {
   const pose = status === "working" ? `${hero}-work` : STILL_STATES.has(status) ? `${hero}-${status}` : hero;
-  const still = image(`mods/fellowship/sprites/${pose}.svg`).w(SPRITE_SIZE).h(SPRITE_SIZE).flex_none();
-  if (status === "working") return twoFrames(still, `${hero}-2`, STEP_PERIOD);
-  if (status === "idle") return twoFrames(still, `${hero}-idle-2`, IDLE_PERIOD);
+  const still = image(`mods/fellowship/sprites/${pose}.svg`).w(size).h(size).flex_none();
+  if (status === "working") return twoFrames(still, `${hero}-2`, STEP_PERIOD, size);
+  if (status === "idle") return twoFrames(still, `${hero}-idle-2`, IDLE_PERIOD, size);
   return still;
 }
 
@@ -426,17 +427,21 @@ export default class Agents extends View {
       const more = detail.get(a.address);
       // An agent on another machine (`vps/t7`) says which.
       const machine = a.address.includes("/") ? a.address.split("/")[0] : null;
+      const hero = cast[a.address];
+      const edition = rare[a.address];
       if (collapsed) {
         return h_flex()
           .id(`ag-${a.address}`)
-          .h(26)
+          .h(RAIL_SPRITE_SIZE + 6)
           .px(8)
           .flex_none()
           .items_center()
           .gap(4)
+          .when(a.focused, (el) => el.bg(t.selected))
           .hover((s) => s.bg(t.hover))
+          .when(Boolean(hero), (el) => el.tooltip(edition?.name ?? titleCase(hero ?? "")))
           .on_click(() => run("pane.focus", { pane: a.pane }))
-          .child(div().flex_1().min_w(0).whitespace_nowrap().text_right().text_color(t.muted).child(String(i + 1)))
+          .child(h_flex().flex_1().min_w(0).justify_end().child(hero ? heroSprite(edition?.sprite ?? hero, a.status, RAIL_SPRITE_SIZE) : pic))
           .child(h_flex().w(14).flex_none().items_center().justify_center().child(this.status(t, a, true)));
       }
       const when = this.since(a);
@@ -463,8 +468,6 @@ export default class Agents extends View {
       // Without a space header above (priority, pinned) the row names its space.
       const full = byPriority || isPinned;
       const name = full ? a.space_name || label(a) : more ?? (/^\d+$/.test(label(a)) ? a.program?.name || label(a) : label(a));
-      const hero = cast[a.address];
-      const edition = rare[a.address];
       const sprite = hero ? heroSprite(edition?.sprite ?? hero, a.status) : pic;
       const stat = this.stats[a.address];
       const hasCtx = stat?.ctx != null;
