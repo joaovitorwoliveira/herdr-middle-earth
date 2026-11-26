@@ -77,6 +77,17 @@ cd herdr-middle-earth
 
 The script copies the layout, themes and mods into `~/.config/herdr-app` (`HERDR_APP_HOME` picks another folder) and switches to the layout. It also merges the sounds into `settings.json` and the program icons into `programs.json`. Anything it replaces is moved to `backups/middle-earth-<time>/`. `ctrl-shift-l` switches back to your layout. The script needs `bash` and `python3`.
 
+### Update
+
+The layout changes often. To get the latest, run this in the folder you cloned:
+
+```sh
+git pull
+./install.sh
+```
+
+The script can run again safely: it backs up what it replaces, as on the first install.
+
 ### Windows, or with your agent
 
 Ask your agent: *"Add the Herdr layout at github.com/joaovitorwoliveira/herdr-middle-earth"*. Herdr's `AGENTS.md` tells it how, and `RECIPE.md` lists the extra steps: the themes and the sounds and icons snippets.
